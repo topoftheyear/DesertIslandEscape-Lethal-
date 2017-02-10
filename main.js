@@ -1,5 +1,10 @@
 var stage;
 
+// Current phase tracker, just in case
+var currentPhase;
+// Tracks whether movement is currently occurring
+var movementOccuring = false;
+
 var circle;
 var g_circle;
 
@@ -10,16 +15,19 @@ function load(){
 
 function init(){
     stage = new createjs.Stage("canvas");
+    currentPhase = "menu";
+    
+    // Test stuff
     var g = new createjs.Graphics();
     
     g.beginFill("rgba(100,100,50,1.0");
-    g.drawCircle(0,0,30)
+    g.drawCircle(0,0,25)
     g_circle = g.command;
     
     circle = new createjs.Shape(g);
     
-    circle.x = 50;
-    circle.y = 50;
+    circle.x = 25;
+    circle.y = 25;
     
     stage.addChild(circle);
     
@@ -35,20 +43,38 @@ function init(){
 
 // Keyboard input
 function keyDown(event){
-    switch(event.keyCode){
-        case 65: // A
-            circle.x--;
-            break;
-        case 68: // D
-            circle.x++;
-            break;
-        case 87: // W
-            circle.y--;
-            break;
-        case 83: // S
-            circle.y++;
-            break;
+    if (!movementOccuring){
+        switch(event.keyCode){
+            case 65: // A
+                if (circle.x - 50 > 0){
+                    createjs.Tween.get(circle, {override:false}).to({x:circle.x - 50}, 500).call(handleComplete);
+                    movementOccuring = true;
+                }
+                break;
+            case 68: // D
+                if (circle.x + 50 < 800){
+                    createjs.Tween.get(circle, {override:false}).to({x:circle.x + 50}, 500).call(handleComplete);
+                    movementOccuring = true;
+                }
+                break;
+            case 87: // W
+                if (circle.y - 50 > 0){
+                    createjs.Tween.get(circle, {override:false}).to({y:circle.y - 50}, 500).call(handleComplete);
+                    movementOccuring = true;
+                }
+                break;
+            case 83: // S
+                if (circle.y + 50 < 600){
+                    createjs.Tween.get(circle, {override:false}).to({y:circle.y + 50}, 500).call(handleComplete);
+                    movementOccuring = true;
+                }
+                break;
+        }
     }
+}
+
+function handleComplete(){
+    movementOccuring = false;
 }
 
 // This method is essentially what should happen every frame regardless of events
