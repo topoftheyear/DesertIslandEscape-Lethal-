@@ -31,8 +31,6 @@ function init(){
     
     stage.addChild(circle);
     
-    stage.addChild(circle);
-    
     stage.update();
     
     createjs.Ticker.setFPS(60);

@@ -6,13 +6,13 @@ Basics:
   Menu
   Randomly generated island
   Win/lose conditions
-  Fog of war
  
 Good Additions:
 
   Multiple class choices for characters
   Food
   Island difficulty/size/type settings
+  Fog of war
   
 Other:
 
