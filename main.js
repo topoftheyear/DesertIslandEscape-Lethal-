@@ -4,8 +4,9 @@ var stage;
 var currentPhase;
 // Tracks whether movement is currently occurring
 var movementOccuring = false;
-// Map size
-var mapSize = 11;
+// Map
+var map;
+var mapSize = 15;
 
 var circle;
 var g_circle;
@@ -56,7 +57,7 @@ function tick(event){
 
 function generateMap(){
     // Create the map
-    var map = new Array(mapSize);
+    map = new Array(mapSize);
     for (var i = 0; i < map.length; i++){
         map[i] = new Array(mapSize);
     }
@@ -83,52 +84,94 @@ function generateMap(){
     };
     var grassSheet = new createjs.SpriteSheet(grassData);
     
-    // Deciding on the tile for the slot
+    // Sand tile
+    var sandData = {
+        images: ["./Images/Sand.png"],
+        frames: {width:64, height:64},
+        animations: {
+            exist:[0]
+        }
+    };
+    var sandSheet = new createjs.SpriteSheet(sandData);
+    
+    // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
             var type;
-            var block;
             
             if (i === 0 || i === map.length - 1 || j === 0 || j === map.length - 1){ 
                 // If the tile is on the edge of the map, make it water
-                block = new createjs.Sprite(waterSheet, "exist");
                 type = "water";
             } else if (i === 1 || i === map.length - 2 || j === 1 || j === map.length - 2){ 
                 // If the tile is the next layer in from the edge, make it 75% chance it is water
                 if (randomNumber(1,4) === randomNumber(1,4)){
-                    block = new createjs.Sprite(grassSheet, "exist");
                     type = "grass";
                 } else {
-                    block = new createjs.Sprite(waterSheet, "exist");
                     type = "water";
                 }
             } else if (i === 2 || i === map.length - 3 || j === 2 || j === map.length - 3){ 
                 // If the tile is 2 layers in, make it 25% chance it is water
                 if (randomNumber(1,4) !== randomNumber(1,4)){
-                    block = new createjs.Sprite(grassSheet, "exist");
                     type = "grass";
                 } else {
-                    block = new createjs.Sprite(waterSheet, "exist");
                     type = "water";
                 }
             } else{ 
                 // All inner tiles have 5% chance of being water
                 if (randomNumber(1,20) === randomNumber(1,20)){
-                    block = new createjs.Sprite(waterSheet, "exist");
                     type = "water";
                 } else {
-                    block = new createjs.Sprite(grassSheet, "exist");
                     type = "grass";
                 }
             }
             
-            // Draw the map
+            // Add the selected block to the map
+            map[i][j] = {type:type, action:""};
+        }
+    }
+    
+    // Replace the tiles next to water with sand
+    for (var i = 0; i < map.length; i++){
+        for (var j = 0; j < map.length; j++){
+            if (map[i][j].type === "water"){
+                if (i + 1 < map.length - 1){
+                    if (map[i+1][j].type === "grass"){
+                        map[i+1][j].type = "sand";
+                    }
+                }
+                if (i - 1 > 0){
+                    if (map[i-1][j].type === "grass"){
+                        map[i-1][j].type = "sand";
+                    }
+                }
+                if (j + 1 < map.length - 1){
+                    if (map[i][j+1].type === "grass"){
+                        map[i][j+1].type = "sand";
+                    }
+                }
+                if (j - 1 > 0){
+                    if (map[i][j-1].type === "grass"){
+                        map[i][j-1].type = "sand";
+                    }
+                }
+            }
+        }
+    }
+    
+    // Draw the map
+    for (var i = 0; i < map.length; i++){
+        for (var j = 0; j < map.length; j++){
+            var block;
+            if (map[i][j].type === "water"){
+                block = new createjs.Sprite(waterSheet, "exist");
+            } else if (map[i][j].type === "grass"){
+                block = new createjs.Sprite(grassSheet, "exist");
+            } else if (map[i][j].type === "sand"){
+                block = new createjs.Sprite(sandSheet, "exist");
+            }
             block.x = i * 64;
             block.y = j * 64;
             stage.addChild(block);
-            
-            // Add the selected block to the map
-            map[i][j] = {type:type, action:""};
         }
     }
 }
