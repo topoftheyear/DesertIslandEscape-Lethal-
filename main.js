@@ -66,7 +66,7 @@ function generateMap(){
     var waterData = {
         images: ["./Images/Water.png"],
         frames: {width:64, height:64},
-        framerate: 12,
+        framerate: 10,
         animations: {
             exist:[0,15]
         }
@@ -94,6 +94,27 @@ function generateMap(){
     };
     var sandSheet = new createjs.SpriteSheet(sandData);
     
+    // Tree tile
+    var treeData = {
+        images: ["./Images/Tree.png"],
+        frames: {width: 64, height:64},
+        framerate: 4,
+        animations: {
+            exist:[0,7]
+        }
+    };
+    var treeSheet = new createjs.SpriteSheet(treeData);
+    
+    // Rock tile
+    var rockData = {
+        images: ["./Images/Rock.png"],
+        frames: {width: 64, height: 64},
+        animations: {
+            exist:[0]
+        }
+    }
+    var rockSheet = new createjs.SpriteSheet(rockData);
+    
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -116,9 +137,9 @@ function generateMap(){
                 } else {
                     type = "water";
                 }
-            } else{ 
-                // All inner tiles have 5% chance of being water
-                if (randomNumber(1,20) === randomNumber(1,20)){
+            } else { 
+                // All inner tiles have 4% chance of being water
+                if (randomNumber(1,25) === randomNumber(1,25)){
                     type = "water";
                 } else {
                     type = "grass";
@@ -127,6 +148,17 @@ function generateMap(){
             
             // Add the selected block to the map
             map[i][j] = {type:type, action:""};
+        }
+    }
+    
+    // All inner water tiles have 25% chance of being next to other water tiles
+    for (var i = 1; i < map.length - 1; i++){
+        for (var j = 1; j < map.length - 1; j++){
+            if (map[i-1][j].type === "water" || map[i+1][j].type === "water" || map[i][j-1].type === "water" || map[i][j+1].type === "water"){
+                if (randomNumber(1,5) === randomNumber(1,5)){
+                    map[i][j].type = "water";
+                }
+            }
         }
     }
     
@@ -158,6 +190,52 @@ function generateMap(){
         }
     }
     
+    // Populate island with trees, can't be next to another tree
+    var treeCount = 3;
+    while (treeCount > 0){
+        for (var i = 0; i < map.length; i++){
+            for (var j = 0; j < map.length; j++){
+                if (map[i][j].type === "grass"){
+                    if (randomNumber(1,100) === randomNumber(1,100) && map[i-1][j].type !== "tree" && map[i+1][j].type !== "tree" && map[i][j-1].type !== "tree" && map[i][j+1].type !== "tree"){
+                        map[i][j].type = "tree";
+                        treeCount--;
+                    }
+                }
+            }
+        }
+    }
+    
+    // Populate island with rocks, should probably be next to other rocks
+    var first = true;
+    var rockCount = mapSize / 6;
+    while (rockCount > 0){
+        for (var i = 0; i < map.length; i++){
+            for (var j = 0; j < map.length; j++){
+                if (map[i][j].type === "grass" || map[i][j].type === "sand"){
+                    if (first){
+                        if (randomNumber(1,50) === randomNumber(1,50)){
+                            first = false;
+                            map[i][j].type = "rock";
+                            rockCount--;
+                        }
+                    } else {
+                        if (map[i-1][j].type === "rock" || map[i+1][j].type === "rock" || map[i][j-1].type === "rock" || map[i][j+1].type === "rock"){
+                            if (randomNumber(1,4) === randomNumber(1,4)){
+                                map[i][j].type = "rock";
+                                rockCount--;
+                            }
+                        } else {
+                            if (randomNumber(1,50) === randomNumber(1,50)){
+                                map[i][j].type = "rock";
+                                rockCount--;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     // Draw the map
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -168,6 +246,10 @@ function generateMap(){
                 block = new createjs.Sprite(grassSheet, "exist");
             } else if (map[i][j].type === "sand"){
                 block = new createjs.Sprite(sandSheet, "exist");
+            } else if (map[i][j].type === "tree"){
+                block = new createjs.Sprite(treeSheet, "exist");
+            } else if (map[i][j].type === "rock"){
+                block = new createjs.Sprite(rockSheet, "exist");
             }
             block.x = i * 64;
             block.y = j * 64;
