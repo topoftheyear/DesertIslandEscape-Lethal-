@@ -164,6 +164,20 @@ function generateMap(){
     }
     var rockSheet = new createjs.SpriteSheet(rockData);
     
+    // Bush tile
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Bush.png";
+    var bushData = {
+        images: [img],
+        frames: {width: 64, height: 64},
+        framerate: 7,
+        animations: {
+            exist:[0,7]
+        }
+    }
+    var bushSheet = new createjs.SpriteSheet(bushData);
+    
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -196,7 +210,7 @@ function generateMap(){
             }
             
             // Add the selected block to the map
-            map[i][j] = {type:type, action:"", rock:false};
+            map[i][j] = {type:type, action:"", rock:false, bush:false};
         }
     }
     
@@ -245,7 +259,7 @@ function generateMap(){
         for (var i = 0; i < map.length; i++){
             for (var j = 0; j < map.length; j++){
                 if (map[i][j].type === "grass"){
-                    if (randomNumber(1,100) === randomNumber(1,100) && map[i-1][j].type !== "tree" && map[i+1][j].type !== "tree" && map[i][j-1].type !== "tree" && map[i][j+1].type !== "tree"){
+                    if (randomNumber(1,100) === randomNumber(1,100) && map[i-1][j].type !== "tree" && map[i+1][j].type !== "tree" && map[i][j-1].type !== "tree" && map[i][j+1].type !== "tree" && map[i-1][j + 1].type !== "tree" && map[i+1][j-1].type !== "tree" && map[i+1][j+1].type !== "tree" && map[i-1][j-1].type !== "tree"){
                         map[i][j].type = "tree";
                         treeCount--;
                     }
@@ -285,6 +299,23 @@ function generateMap(){
         }
     }
     
+    // Populate island with bushes, biased towards spawning with other bushes
+    for (var i = 0; i < map.length; i++){
+        for (var j = 0; j < map.length; j++){
+            if (map[i][j].type === "grass" && map[i][j].rock !== true){
+                if (map[i-1][j].bush === true || map[i+1][j].bush === true || map[i][j-1].bush === true || map[i][j+1].bush === true){
+                    if (randomNumber(1,2) === randomNumber(1,2)){
+                        map[i][j].bush = true;
+                    }
+                } else {
+                    if (randomNumber(1,4) === randomNumber(1,4)){
+                        map[i][j].bush = true;
+                    }
+                }
+            }
+        }
+    }
+    
     // Draw the map
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -304,6 +335,11 @@ function generateMap(){
             
             if (map[i][j].rock === true){
                 block = new createjs.Sprite(rockSheet, "exist");
+                block.x = i * 64;
+                block.y = j * 64;
+                gameWorld.addChild(block);
+            } else if (map[i][j].bush === true){
+                block = new createjs.Sprite(bushSheet, "exist");
                 block.x = i * 64;
                 block.y = j * 64;
                 gameWorld.addChild(block);
