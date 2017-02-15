@@ -9,7 +9,7 @@ var currentPhase;
 var movementOccuring = false;
 // Map
 var map;
-var mapSize = 31;
+var mapSize = 17;
 
 
 function load(){
@@ -70,10 +70,16 @@ function handleComplete(){
 
 // Mouse map drag and drop
 function mouseDnD(e){
-    gameWorld.addEventListener('stagemousemove', function (e) {
-        gameWorld.x = stage.mouseX; gameWorld.y = stage.mouseY; stage.update();
+    gameWorld.posX = e.stageX;
+    gameWorld.posY = e.stageY;
+    gameWorld.addEventListener('pressmove', function (e) {
+        gameWorld.x = -gameWorld.posX + e.stageX + gameWorld.x; 
+        gameWorld.y = -gameWorld.posY + e.stageY + gameWorld.y; 
+        
+        gameWorld.posX = e.stageX;
+        gameWorld.posY = e.stageY;
     });
-    gameWorld.addEventListener('stagemouseup', function (e) {
+    gameWorld.addEventListener('pressup', function (e) {
         e.target.removeAllEventListeners();
     });
 }
@@ -91,8 +97,11 @@ function generateMap(){
     }
     
     // Water tile
+    var img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Water.png";
     var waterData = {
-        images: ["./Images/Water.png"],
+        images: [img],
         frames: {width:64, height:64},
         framerate: 10,
         animations: {
@@ -102,8 +111,11 @@ function generateMap(){
     var waterSheet = new createjs.SpriteSheet(waterData);
     
     // Grass tile
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Grass.png";
     var grassData = {
-        images: ["./Images/Grass.png"],
+        images: [img],
         frames: {width:64, height:64},
         framerate: 4,
         animations: {
@@ -113,8 +125,11 @@ function generateMap(){
     var grassSheet = new createjs.SpriteSheet(grassData);
     
     // Sand tile
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Sand.png";
     var sandData = {
-        images: ["./Images/Sand.png"],
+        images: [img],
         frames: {width:64, height:64},
         animations: {
             exist:[0]
@@ -123,8 +138,11 @@ function generateMap(){
     var sandSheet = new createjs.SpriteSheet(sandData);
     
     // Tree tile
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Tree.png";
     var treeData = {
-        images: ["./Images/Tree.png"],
+        images: [img],
         frames: {width: 64, height:64},
         framerate: 4,
         animations: {
@@ -134,8 +152,11 @@ function generateMap(){
     var treeSheet = new createjs.SpriteSheet(treeData);
     
     // Rock tile
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Rock.png";
     var rockData = {
-        images: ["./Images/Rock.png"],
+        images: [img],
         frames: {width: 64, height: 64},
         animations: {
             exist:[0]
