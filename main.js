@@ -1,4 +1,7 @@
+// Whole stage
 var stage;
+// Container the map and characters go into
+var gameWorld;
 
 // Current phase tracker, just in case
 var currentPhase;
@@ -6,10 +9,7 @@ var currentPhase;
 var movementOccuring = false;
 // Map
 var map;
-var mapSize = 15;
-
-var circle;
-var g_circle;
+var mapSize = 31;
 
 
 function load(){
@@ -17,13 +17,17 @@ function load(){
 }
 
 function init(){
+    gameWorld = new createjs.Container();
     stage = new createjs.Stage("canvas");
+    gameWorld.x = 0;
+    gameWorld.y = 0;
     currentPhase = "menu";
     
     generateMap();
     
-    stage.update();
+    gameWorld.addEventListener('mousedown', mouseDnD);
     
+    stage.addChild(gameWorld);
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
         
@@ -33,21 +37,45 @@ function init(){
 // Keyboard input
 function keyDown(event){
     if (!movementOccuring){
-        switch(event.keyCode){
-            case 65: // A
-                break;
-            case 68: // D
-                break;
-            case 87: // W
-                break;
-            case 83: // S
-                break;
+        var key = event.keyCode;
+        
+        if (key === 65){
+            // A
+            if (gameWorld.x + 64 <= mapSize * 32 - 960){
+                createjs.Tween.get(gameWorld, {override:false}).to({x:gameWorld.x + 64}, 1);
+            }
+        } else if (key === 68){
+            // D
+            if (gameWorld.x - 64 >= 0 - mapSize * 32 - 64){
+                createjs.Tween.get(gameWorld, {override:false}).to({x:gameWorld.x - 64}, 1);
+            }
+        }
+        if (key === 87){
+            // W
+            if (gameWorld.y + 64 <= mapSize * 32 - 960){
+                createjs.Tween.get(gameWorld, {override:false}).to({y:gameWorld.y + 64}, 1);
+            }
+        } else if (key === 83){
+            // S
+            if (gameWorld.y - 64 >= 0 - mapSize * 32 - 64){
+                createjs.Tween.get(gameWorld, {override:false}).to({y:gameWorld.y - 64}, 1);
+            }
         }
     }
 }
 
 function handleComplete(){
     movementOccuring = false;
+}
+
+// Mouse map drag and drop
+function mouseDnD(e){
+    gameWorld.addEventListener('stagemousemove', function (e) {
+        gameWorld.x = stage.mouseX; gameWorld.y = stage.mouseY; stage.update();
+    });
+    gameWorld.addEventListener('stagemouseup', function (e) {
+        e.target.removeAllEventListeners();
+    });
 }
 
 // This method is essentially what should happen every frame regardless of events
@@ -147,7 +175,7 @@ function generateMap(){
             }
             
             // Add the selected block to the map
-            map[i][j] = {type:type, action:""};
+            map[i][j] = {type:type, action:"", rock:false};
         }
     }
     
@@ -207,7 +235,7 @@ function generateMap(){
     
     // Populate island with rocks, should probably be next to other rocks
     var first = true;
-    var rockCount = mapSize / 6;
+    var rockCount = mapSize / 5;
     while (rockCount > 0){
         for (var i = 0; i < map.length; i++){
             for (var j = 0; j < map.length; j++){
@@ -215,18 +243,18 @@ function generateMap(){
                     if (first){
                         if (randomNumber(1,50) === randomNumber(1,50)){
                             first = false;
-                            map[i][j].type = "rock";
+                            map[i][j].rock = true;
                             rockCount--;
                         }
                     } else {
-                        if (map[i-1][j].type === "rock" || map[i+1][j].type === "rock" || map[i][j-1].type === "rock" || map[i][j+1].type === "rock"){
+                        if (map[i-1][j].rock === true || map[i+1][j].rock === true || map[i][j-1].rock === true || map[i][j+1].rock === true){
                             if (randomNumber(1,4) === randomNumber(1,4)){
-                                map[i][j].type = "rock";
+                                map[i][j].rock = true;
                                 rockCount--;
                             }
                         } else {
                             if (randomNumber(1,50) === randomNumber(1,50)){
-                                map[i][j].type = "rock";
+                                map[i][j].rock = true;
                                 rockCount--;
                             }
                         }
@@ -248,12 +276,17 @@ function generateMap(){
                 block = new createjs.Sprite(sandSheet, "exist");
             } else if (map[i][j].type === "tree"){
                 block = new createjs.Sprite(treeSheet, "exist");
-            } else if (map[i][j].type === "rock"){
-                block = new createjs.Sprite(rockSheet, "exist");
             }
             block.x = i * 64;
             block.y = j * 64;
-            stage.addChild(block);
+            gameWorld.addChild(block);
+            
+            if (map[i][j].rock === true){
+                block = new createjs.Sprite(rockSheet, "exist");
+                block.x = i * 64;
+                block.y = j * 64;
+                gameWorld.addChild(block);
+            }
         }
     }
 }
