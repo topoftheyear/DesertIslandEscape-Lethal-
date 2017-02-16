@@ -171,9 +171,9 @@ function generateMap(){
     var bushData = {
         images: [img],
         frames: {width: 64, height: 64},
-        framerate: 7,
+        framerate: 4,
         animations: {
-            exist:[0,7]
+            exist:[0,3]
         }
     }
     var bushSheet = new createjs.SpriteSheet(bushData);
