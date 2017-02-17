@@ -21,13 +21,21 @@ function init(){
     stage = new createjs.Stage("canvas");
     gameWorld.x = 0;
     gameWorld.y = 0;
+    
     currentPhase = "menu";
     
     generateMap();
     
+    // Side menu
+    var g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(960, 0, 256, 960);
+    sideMenu = new createjs.Shape(g1);
+    
+    // Map movement by mouse added
     gameWorld.addEventListener('mousedown', mouseDnD);
     
     stage.addChild(gameWorld);
+    stage.addChild(sideMenu);
+    
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
         
@@ -95,6 +103,7 @@ function tick(event){
     stage.update(event);
 }
 
+// Generates the map, complete with events and stuff
 function generateMap(){
     // Create the map
     map = new Array(mapSize);
