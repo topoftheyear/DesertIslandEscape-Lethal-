@@ -86,6 +86,12 @@ function mouseDnD(e){
 
 // This method is essentially what should happen every frame regardless of events
 function tick(event){
+    if (window.innerHeight < 960)
+    {
+        var cnv = document.getElementById("canvas");
+        cnv.height = window.innerHeight - 10;
+        cnv.width = window.innerHeight - 10;
+    }
     stage.update(event);
 }
 
