@@ -5,11 +5,17 @@ var gameWorld;
 
 // Current phase tracker, just in case
 var currentPhase;
+
 // Tracks whether movement is currently occurring
 var movementOccuring = false;
+
 // Map
 var map;
 var mapSize = 17;
+var spawn;
+
+//Side Menu
+var sideMenu;
 
 
 function load(){
@@ -94,12 +100,17 @@ function mouseDnD(e){
 
 // This method is essentially what should happen every frame regardless of events
 function tick(event){
-    if (window.innerHeight < 960)
+    // Window resizing
+    if (window.innerHeight < 960 + 256)
     {
         var cnv = document.getElementById("canvas");
         cnv.height = window.innerHeight - 10;
-        cnv.width = window.innerHeight - 10;
+        cnv.width = window.innerHeight - 10 + 256;
+        
     }
+    sideMenu.height = cnv.height;
+    sideMenu.x = cnv.width - 256;
+    
     stage.update(event);
 }
 
@@ -193,6 +204,20 @@ function generateMap(){
     }
     var bushSheet = new createjs.SpriteSheet(bushData);
     
+    // Action item
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Action.png";
+    var actionData = {
+        images: [img],
+        frames: {width: 64, height: 64},
+        framerate: 12,
+        animations: {
+            exist:[0,13]
+        }
+    }
+    var actionSheet = new createjs.SpriteSheet(actionData);
+    
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -225,7 +250,7 @@ function generateMap(){
             }
             
             // Add the selected block to the map
-            map[i][j] = {type:type, action:"", rock:false, bush:false};
+            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false};
         }
     }
     
@@ -331,6 +356,19 @@ function generateMap(){
         }
     }
     
+    // Add events to the tiles
+    for (var i = 0; i < map.length; i++){
+        for (var j = 0; j < map.length; j++){
+            if (map[i][j].type !== "water" || map[i][j].rock === true){
+                if (map[i][j].bush === true){
+                    map[i][j].action = "something";
+                } else if (map[i][j].type === "tree"){
+                    map[i][j].action = "tree";
+                }
+            }
+        }
+    }
+    
     // Draw the map
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -355,6 +393,13 @@ function generateMap(){
                 gameWorld.addChild(block);
             } else if (map[i][j].bush === true){
                 block = new createjs.Sprite(bushSheet, "exist");
+                block.x = i * 64;
+                block.y = j * 64;
+                gameWorld.addChild(block);
+            }
+            
+            if (map[i][j].action !== "nothing"){
+                block = new createjs.Sprite(actionSheet, "exist");
                 block.x = i * 64;
                 block.y = j * 64;
                 gameWorld.addChild(block);
