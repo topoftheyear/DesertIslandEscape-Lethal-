@@ -379,7 +379,7 @@ function generateMap(){
                 break;
             }
             if (map[i][j].type === "grass" && map[i-1][j].rock === false){
-                spawn.x = i;
+                spawn.x = i-1;
                 spawn.y = j;
                 map[i-1][j].action = "spawn";
                 spawnStop = true;
