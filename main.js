@@ -12,7 +12,7 @@ var movementOccuring = false;
 // Map
 var map;
 var mapSize = 17;
-var spawn;
+var spawn = {x:0, y:0};
 
 //Side Menu
 var g1;
@@ -364,6 +364,25 @@ function generateMap(){
                 } else if (map[i][j].type === "tree"){
                     map[i][j].action = "tree";
                 }
+            }
+        }
+    }
+    
+    // Set spawn
+    var spawnStop = false;
+    for (var i = 0; i < map.length; i++){
+        if (spawnStop){
+            break;
+        }
+        for (var j = 0; j < map.length; j++){
+            if (spawnStop){
+                break;
+            }
+            if (map[i][j].type === "grass" && map[i-1][j].rock === false){
+                spawn.x = i;
+                spawn.y = j;
+                map[i-1][j].action = "spawn";
+                spawnStop = true;
             }
         }
     }
