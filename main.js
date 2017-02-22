@@ -203,20 +203,6 @@ function generateMap(){
     }
     var bushSheet = new createjs.SpriteSheet(bushData);
     
-    // Volcano tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Volcano.png";
-    var volcanoData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        framerate: 100,
-        animations: {
-            exist:[0,1]
-        }
-    }
-    var volcanoSheet = new createjs.SpriteSheet(volcanoData);
-    
     // Action item
     img = new Image();
     img.crossOrigin="Anonymous";
@@ -230,6 +216,63 @@ function generateMap(){
         }
     }
     var actionSheet = new createjs.SpriteSheet(actionData);
+    
+    // Volcano tile
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Volcano.png";
+    var volcanoData = {
+        images: [img],
+        frames: {width: 64, height: 64},
+        framerate: 100,
+        animations: {
+            exist:[0,1]
+        }
+    }
+    var volcanoSheet = new createjs.SpriteSheet(volcanoData);
+    /*Characters here:
+     *Greg
+     *Susan
+     *PlaceHolder1
+     *PlaceHolder2 */
+    //Default Character
+    //Greg Character
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Char_Greg.png";
+    var gregData = {
+        x: 0,
+        y: 0,
+        images: [img],
+        frames: {width: 32, height: 32},
+        framerate: 1,
+        animations: {
+            exist: 0,
+            walkUp: [1,2.1],
+            walkLeft: [3,4,5,4],
+            walkRight: [6,7,8,7],
+            walkDown: [9,10,11,10],
+        }
+    }
+    var gregSheet = new createjs.SpriteSheet(gregData);
+
+    //Susan Character
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Char_Susan.png";
+    var susanData = {
+        images: [img],
+        frames: {width: 32, height: 32},
+        framerate: 1,
+        animations: {
+            exist: 0,
+            walkUp: [1,2.1],
+            walkLeft: [3,4,5,4],
+            walkRight: [6,7,8,7],
+            walkDown: [9,10,11,10],
+        }
+    }
+    var susanSheet = new createjs.SpriteSheet(susanData);
     
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
@@ -369,7 +412,7 @@ function generateMap(){
         }
     }
     
-    // Add a volcano (important)
+        // Add a volcano (important)
     var volcanoCount = 1;
     while (volcanoCount > 0){
         for (var i = 2; i < map.length - 2; i++){
@@ -393,7 +436,7 @@ function generateMap(){
             }
         }
     }
-    
+
     // Add events to the tiles
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -406,8 +449,8 @@ function generateMap(){
             }
         }
     }
-    
-    // Set spawn
+
+     // Set spawn
     var spawnStop = false;
     for (var i = 0; i < map.length; i++){
         if (spawnStop){
@@ -425,7 +468,7 @@ function generateMap(){
             }
         }
     }
-    
+       
     // Draw the map
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -450,7 +493,7 @@ function generateMap(){
                 gameWorld.addChild(block);
             } else if (map[i][j].bush === true){
                 block = new createjs.Sprite(bushSheet, "exist");
-                block.x = i * 64;
+                                block.x = i * 64;
                 block.y = j * 64;
                 gameWorld.addChild(block);
             } else if (map[i][j].volcano === true){
