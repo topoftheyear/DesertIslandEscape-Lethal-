@@ -110,10 +110,6 @@ function tick(event){
         
     }
     
-    // Side menu resizing
-    g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
-    sideMenu = new createjs.Shape(g1);
-    
     stage.update(event);
 }
 
