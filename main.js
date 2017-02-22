@@ -34,13 +34,13 @@ function init(){
     generateMap();
     
     // Side menu
-    g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(window.width - 256, 0, 256, window.height);
+    g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
     sideMenu = new createjs.Shape(g1);
     
     // Map movement by mouse added
     gameWorld.addEventListener('mousedown', mouseDnD);
     
-    //stage.addChild(gameWorld);
+    stage.addChild(gameWorld);
     stage.addChild(sideMenu);
     
     createjs.Ticker.setFPS(60);
@@ -109,6 +109,10 @@ function tick(event){
         cnv.width = window.innerHeight - 10 + 256;
         
     }
+    
+    // Side menu resizing
+    g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
+    sideMenu = new createjs.Shape(g1);
     
     stage.update(event);
 }
