@@ -12,9 +12,10 @@ var movementOccuring = false;
 // Map
 var map;
 var mapSize = 17;
-var spawn;
+var spawn = {x:0, y:0};
 
 //Side Menu
+var g1;
 var sideMenu;
 
 
@@ -33,7 +34,7 @@ function init(){
     generateMap();
     
     // Side menu
-    var g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(960, 0, 256, 960);
+    g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
     sideMenu = new createjs.Shape(g1);
     
     // Map movement by mouse added
@@ -108,8 +109,6 @@ function tick(event){
         cnv.width = window.innerHeight - 10 + 256;
         
     }
-    sideMenu.height = cnv.height;
-    sideMenu.x = cnv.width - 256;
     
     stage.update(event);
 }
@@ -204,6 +203,20 @@ function generateMap(){
     }
     var bushSheet = new createjs.SpriteSheet(bushData);
     
+    // Volcano tile
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/Volcano.png";
+    var volcanoData = {
+        images: [img],
+        frames: {width: 64, height: 64},
+        framerate: 100,
+        animations: {
+            exist:[0,1]
+        }
+    }
+    var volcanoSheet = new createjs.SpriteSheet(volcanoData);
+    
     // Action item
     img = new Image();
     img.crossOrigin="Anonymous";
@@ -250,7 +263,7 @@ function generateMap(){
             }
             
             // Add the selected block to the map
-            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false};
+            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false, fog:false, volcano:false};
         }
     }
     
@@ -356,6 +369,31 @@ function generateMap(){
         }
     }
     
+    // Add a volcano (important)
+    var volcanoCount = 1;
+    while (volcanoCount > 0){
+        for (var i = 2; i < map.length - 2; i++){
+            if (volcanoCount === 0){
+                break;
+            }
+        
+            for (var j = 2; j < map.length - 2; j++){
+                if (volcanoCount === 0){
+                    break;
+                }
+            
+                if (map[i][j].type === "grass" || map[i][j].type === "sand"){
+                    if (map[i][j].rock === false && map[i][j].bush === false){
+                        if (randomNumber(1,100) === randomNumber(1,100)){
+                            map[i][j].volcano = true;
+                            volcanoCount--;
+                        }
+                    }
+                } 
+            }
+        }
+    }
+    
     // Add events to the tiles
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -365,6 +403,25 @@ function generateMap(){
                 } else if (map[i][j].type === "tree"){
                     map[i][j].action = "tree";
                 }
+            }
+        }
+    }
+    
+    // Set spawn
+    var spawnStop = false;
+    for (var i = 0; i < map.length; i++){
+        if (spawnStop){
+            break;
+        }
+        for (var j = 0; j < map.length; j++){
+            if (spawnStop){
+                break;
+            }
+            if (map[i][j].type === "grass" && map[i-1][j].rock === false && map[i-1][j].volcano === false){
+                spawn.x = i-1;
+                spawn.y = j;
+                map[i-1][j].action = "spawn";
+                spawnStop = true;
             }
         }
     }
@@ -393,6 +450,11 @@ function generateMap(){
                 gameWorld.addChild(block);
             } else if (map[i][j].bush === true){
                 block = new createjs.Sprite(bushSheet, "exist");
+                block.x = i * 64;
+                block.y = j * 64;
+                gameWorld.addChild(block);
+            } else if (map[i][j].volcano === true){
+                block = new createjs.Sprite(volcanoSheet, "exist");
                 block.x = i * 64;
                 block.y = j * 64;
                 gameWorld.addChild(block);
