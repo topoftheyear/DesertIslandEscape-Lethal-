@@ -14,9 +14,16 @@ var map;
 var mapSize = 17;
 var spawn = {x:0, y:0};
 
-//Side Menu
+// Side Menu
 var g1;
 var sideMenu;
+
+// Characters
+var character1 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character2 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character3 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character4 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var currentCharacter = character1;
 
 
 function load(){
@@ -32,6 +39,7 @@ function init(){
     currentPhase = "menu";
     
     generateMap();
+    generateCharacters("default", "default", "default", "default");
     
     // Side menu
     g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
@@ -47,6 +55,8 @@ function init(){
     createjs.Ticker.addEventListener("tick", tick);
         
     this.document.onkeydown = keyDown;
+    
+    game();
 }
 
 // Keyboard input
@@ -56,25 +66,12 @@ function keyDown(event){
         
         if (key === 65){
             // A
-            if (gameWorld.x + 64 <= mapSize * 32 - 960){
-                createjs.Tween.get(gameWorld, {override:false}).to({x:gameWorld.x + 64}, 1);
-            }
         } else if (key === 68){
             // D
-            if (gameWorld.x - 64 >= 0 - mapSize * 32 - 64){
-                createjs.Tween.get(gameWorld, {override:false}).to({x:gameWorld.x - 64}, 1);
-            }
-        }
-        if (key === 87){
+        } else if (key === 87){
             // W
-            if (gameWorld.y + 64 <= mapSize * 32 - 960){
-                createjs.Tween.get(gameWorld, {override:false}).to({y:gameWorld.y + 64}, 1);
-            }
         } else if (key === 83){
             // S
-            if (gameWorld.y - 64 >= 0 - mapSize * 32 - 64){
-                createjs.Tween.get(gameWorld, {override:false}).to({y:gameWorld.y - 64}, 1);
-            }
         }
     }
 }
@@ -210,7 +207,7 @@ function generateMap(){
     var volcanoData = {
         images: [img],
         frames: {width: 64, height: 64},
-        framerate: 100,
+        framerate: 10,
         animations: {
             exist:[0,1]
         }
@@ -468,6 +465,17 @@ function generateMap(){
             }
         }
     }
+}
+
+// Character generation based on classes given
+function generateCharacters(type1, type2, type3, type4){
+    // Give the character the stats based on the respective type given
+    // Put them in the map[][] at spawn, and draw them in staggered per corner
+}
+
+// The game itself
+function game(){
+    
 }
 
 function randomNumber(min, max){
