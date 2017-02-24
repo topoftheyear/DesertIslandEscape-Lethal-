@@ -16,7 +16,10 @@ var spawn = {x:0, y:0};
 
 // Side Menu
 var g1;
+var sideMenuBackground;
 var sideMenu;
+var foodPile;
+var woodPile;
 
 // Characters
 var character1 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
@@ -46,13 +49,13 @@ function init(){
     
     // Side menu
     g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
-    sideMenu = new createjs.Shape(g1);
+    sideMenuBackground = new createjs.Shape(g1);
     
     // Map movement by mouse added
     gameWorld.addEventListener('mousedown', mouseDnD);
     
     stage.addChild(gameWorld);
-    stage.addChild(sideMenu);
+    stage.addChild(sideMenuGround);
     
     currentPhase = "turnStart";
     
@@ -69,34 +72,34 @@ function keyDown(event){
         
         if (key === 65){
             // A
-            if (!movementOccuring){
+            if (!movementOccuring && map[currentCharacter.i-1][currentCharacter.j].type !== "water" && map[currentCharacter.i-1][currentCharacter.j].rock === false && map[currentCharacter.i-1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walkLeft");
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 1000).call(handleComplete);
                 currentCharacter.i = currentCharacter.i - 1;
             }
         } else if (key === 68){
             // D
-            if (!movementOccuring){
+            if (!movementOccuring && map[currentCharacter.i+1][currentCharacter.j].type !== "water" && map[currentCharacter.i+1][currentCharacter.j].rock === false && map[currentCharacter.i+1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walk");
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 1000).call(handleComplete);
                 currentCharacter.i = currentCharacter.i + 1;
             }
         } else if (key === 87){
             // W
-            if (!movementOccuring){
+            if (!movementOccuring && map[currentCharacter.i][currentCharacter.j-1].type !== "water" && map[currentCharacter.i][currentCharacter.j-1].rock === false && map[currentCharacter.i][currentCharacter.j-1].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walkLeft");
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j - 1;
             }
         } else if (key === 83){
             // S
-            if (!movementOccuring){
+            if (!movementOccuring && map[currentCharacter.i][currentCharacter.j+1].type !== "water" && map[currentCharacter.i][currentCharacter.j+1].rock === false && map[currentCharacter.i][currentCharacter.j+1].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walk");
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j + 1;
             }
         }
@@ -105,6 +108,8 @@ function keyDown(event){
 
 function handleComplete(){
     movementOccuring = false;
+    currentCharacter.sprite.gotoAndPlay("exist");
+    movesLeft--;
 }
 
 // Mouse map drag and drop
