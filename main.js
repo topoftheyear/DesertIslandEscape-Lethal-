@@ -23,7 +23,7 @@ var character1 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var character2 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var character3 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var character4 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
-var currentCharacter = 1;
+var currentCharacter = character1;
 
 // Game stuff
 var movesLeft = 0;
@@ -72,30 +72,32 @@ function keyDown(event){
             if (!movementOccuring){
                 movementOccuring = true;
                 movesLeft--;
-                if (currentCharacter === 1){
-                    var moveTo = character1.sprite.x - 64;
-                    alert('here');
-                    createjs.Tween.get(character1, {override:false}).to({x:moveTo}, 1000).call(handleComplete);
-                    character1.j = character1.j - 1;
-                }
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 500).call(handleComplete);
+                currentCharacter.i = currentCharacter.i - 1;
             }
         } else if (key === 68){
             // D
             if (!movementOccuring){
                 movementOccuring = true;
                 movesLeft--;
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 500).call(handleComplete);
+                currentCharacter.i = currentCharacter.i + 1;
             }
         } else if (key === 87){
             // W
             if (!movementOccuring){
                 movementOccuring = true;
                 movesLeft--;
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 500).call(handleComplete);
+                currentCharacter.j = currentCharacter.j - 1;
             }
         } else if (key === 83){
             // S
             if (!movementOccuring){
                 movementOccuring = true;
                 movesLeft--;
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 500).call(handleComplete);
+                currentCharacter.j = currentCharacter.j + 1;
             }
         }
     }
@@ -134,20 +136,12 @@ function tick(event){
     
     if (currentPhase === "turnStart"){
         currentPhase = "turn";
-        switch (currentCharacter){
-            case 1:
-                movesLeft = character1.movement;
-                break;
-            case 2:
-                movesLeft = character2.movement;
-                break;
-            case 3:
-                movesLeft = character3.movement;
-                break;
-            case 4:
-                movesLeft = character4.movement;
-                break;
-        }
+        movesLeft = currentCharacter.movement;
+    }
+    
+    if (movesLeft === 0){
+        nextCharacter();
+        currentPhase = "turnStart";
     }
     
     stage.update(event);
@@ -586,14 +580,14 @@ function generateCharacters(type1, type2, type3, type4){
 
 // Lets the next character take their turn
 function nextCharacter(){
-    if (currentCharacter === 1){
-        currentCharacter = 2;
-    } else if (currentCharacter === 2){
-        currentCharacter = 3;
-    } else if (currentCharacter === 3){
-        currentCharacter = 4;
+    if (currentCharacter === character1){
+        currentCharacter = character2;
+    } else if (currentCharacter === character2){
+        currentCharacter = character3;
+    } else if (currentCharacter === character3){
+        currentCharacter = character4;
     } else{
-        currentCharacter = 1;
+        currentCharacter = character1;
     }
 }
 
