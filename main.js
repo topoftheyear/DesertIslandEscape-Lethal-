@@ -73,8 +73,10 @@ function keyDown(event){
                 movementOccuring = true;
                 movesLeft--;
                 if (currentCharacter === 1){
-                    createjs.Tween.get(character1.sprite, {override:false}).to(character1.sprite.x - 64, 1000).call(handleComplete);
-                    character1.j = character.j - 1;
+                    var moveTo = character1.sprite.x - 64;
+                    alert('here');
+                    createjs.Tween.get(character1, {override:false}).to({x:moveTo}, 1000).call(handleComplete);
+                    character1.j = character1.j - 1;
                 }
             }
         } else if (key === 68){
