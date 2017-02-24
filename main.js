@@ -19,11 +19,14 @@ var g1;
 var sideMenu;
 
 // Characters
-var character1 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
-var character2 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
-var character3 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
-var character4 = {x:0, y:0, spriteSheet:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
-var currentCharacter = character1;
+var character1 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character2 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character3 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character4 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var currentCharacter = 1;
+
+// Game stuff
+var movesLeft = 0;
 
 
 function load(){
@@ -51,12 +54,12 @@ function init(){
     stage.addChild(gameWorld);
     stage.addChild(sideMenu);
     
+    currentPhase = "turnStart";
+    
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
         
     this.document.onkeydown = keyDown;
-    
-    game();
 }
 
 // Keyboard input
@@ -66,12 +69,32 @@ function keyDown(event){
         
         if (key === 65){
             // A
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+                if (currentCharacter === 1){
+                    createjs.Tween.get(character1.sprite, {override:false}).to(character1.sprite.x - 64, 1000).call(handleComplete);
+                    character1.j = character.j - 1;
+                }
+            }
         } else if (key === 68){
             // D
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+            }
         } else if (key === 87){
             // W
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+            }
         } else if (key === 83){
             // S
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+            }
         }
     }
 }
@@ -105,6 +128,24 @@ function tick(event){
         cnv.height = window.innerHeight - 10;
         cnv.width = window.innerHeight - 10 + 256;
         
+    }
+    
+    if (currentPhase === "turnStart"){
+        currentPhase = "turn";
+        switch (currentCharacter){
+            case 1:
+                movesLeft = character1.movement;
+                break;
+            case 2:
+                movesLeft = character2.movement;
+                break;
+            case 3:
+                movesLeft = character3.movement;
+                break;
+            case 4:
+                movesLeft = character4.movement;
+                break;
+        }
     }
     
     stage.update(event);
@@ -457,7 +498,7 @@ function generateMap(){
                 gameWorld.addChild(block);
             }
             
-            if (map[i][j].action !== "nothing"){
+            if (map[i][j].action !== "nothing" && map[i][j].action !== "spawn"){
                 block = new createjs.Sprite(actionSheet, "exist");
                 block.x = i * 64;
                 block.y = j * 64;
@@ -470,12 +511,88 @@ function generateMap(){
 // Character generation based on classes given
 function generateCharacters(type1, type2, type3, type4){
     // Give the character the stats based on the respective type given
+    // Default
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/DefaultCharacter.png";
+    var defaultCharacterData = {
+        images: [img],
+        frames: {width: 32, height: 32},
+        framerate: 5,
+        animations: {
+            exist:[0],
+            walk:[1,4],
+            walkLeft:[5,8],
+            punch:[9,10]
+        }
+    }
+    var defaultCharacterSheet = new createjs.SpriteSheet(defaultCharacterData);
+    
+    if (type1 === 'default'){
+        character1.class = "default";
+        character1.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character1.food = 2;
+        character1.movement = 4;
+        character1.sight = 1;
+    }
+    if (type2 === 'default'){
+        character2.class = "default";
+        character2.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character2.food = 2;
+        character2.movement = 4;
+        character2.sight = 1;
+    }
+    if (type3 === 'default'){
+        character3.class = "default";
+        character3.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character3.food = 2;
+        character3.movement = 4;
+        character3.sight = 1;
+    }
+    if (type4 === 'default'){
+        character4.class = "default";
+        character4.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character4.food = 2;
+        character4.movement = 4;
+        character4.sight = 1;
+    }
     // Put them in the map[][] at spawn, and draw them in staggered per corner
+    character1.i = spawn.x;
+    character1.j = spawn.y;
+    character1.sprite.x = spawn.x * 64;
+    character1.sprite.y = spawn.y * 64;
+    gameWorld.addChild(character1.sprite);
+    
+    character2.i = spawn.x;
+    character2.j = spawn.y;
+    character2.sprite.x = spawn.x * 64 + 32;
+    character2.sprite.y = spawn.y * 64;
+    gameWorld.addChild(character2.sprite);
+    
+    character3.i = spawn.x;
+    character3.j = spawn.y;
+    character3.sprite.x = spawn.x * 64;
+    character3.sprite.y = spawn.y * 64 + 32;
+    gameWorld.addChild(character3.sprite);
+    
+    character4.i = spawn.x;
+    character4.j = spawn.y;
+    character4.sprite.x = spawn.x * 64 + 32;
+    character4.sprite.y = spawn.y * 64 + 32;
+    gameWorld.addChild(character4.sprite);
 }
 
-// The game itself
-function game(){
-    
+// Lets the next character take their turn
+function nextCharacter(){
+    if (currentCharacter === 1){
+        currentCharacter = 2;
+    } else if (currentCharacter === 2){
+        currentCharacter = 3;
+    } else if (currentCharacter === 3){
+        currentCharacter = 4;
+    } else{
+        currentCharacter = 1;
+    }
 }
 
 function randomNumber(min, max){
