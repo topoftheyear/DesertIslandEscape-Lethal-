@@ -14,9 +14,19 @@ var map;
 var mapSize = 17;
 var spawn = {x:0, y:0};
 
-//Side Menu
+// Side Menu
 var g1;
 var sideMenu;
+
+// Characters
+var character1 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character2 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character3 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var character4 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
+var currentCharacter = character1;
+
+// Game stuff
+var movesLeft = 0;
 
 
 function load(){
@@ -32,6 +42,7 @@ function init(){
     currentPhase = "menu";
     
     generateMap();
+    generateCharacters("default", "default", "default", "default");
     
     // Side menu
     g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
@@ -42,6 +53,8 @@ function init(){
     
     stage.addChild(gameWorld);
     stage.addChild(sideMenu);
+    
+    currentPhase = "turnStart";
     
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
@@ -56,24 +69,35 @@ function keyDown(event){
         
         if (key === 65){
             // A
-            if (gameWorld.x + 64 <= mapSize * 32 - 960){
-                createjs.Tween.get(gameWorld, {override:false}).to({x:gameWorld.x + 64}, 1);
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 500).call(handleComplete);
+                currentCharacter.i = currentCharacter.i - 1;
             }
         } else if (key === 68){
             // D
-            if (gameWorld.x - 64 >= 0 - mapSize * 32 - 64){
-                createjs.Tween.get(gameWorld, {override:false}).to({x:gameWorld.x - 64}, 1);
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 500).call(handleComplete);
+                currentCharacter.i = currentCharacter.i + 1;
             }
-        }
-        if (key === 87){
+        } else if (key === 87){
             // W
-            if (gameWorld.y + 64 <= mapSize * 32 - 960){
-                createjs.Tween.get(gameWorld, {override:false}).to({y:gameWorld.y + 64}, 1);
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 500).call(handleComplete);
+                currentCharacter.j = currentCharacter.j - 1;
             }
         } else if (key === 83){
             // S
-            if (gameWorld.y - 64 >= 0 - mapSize * 32 - 64){
-                createjs.Tween.get(gameWorld, {override:false}).to({y:gameWorld.y - 64}, 1);
+            if (!movementOccuring){
+                movementOccuring = true;
+                movesLeft--;
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 500).call(handleComplete);
+                currentCharacter.j = currentCharacter.j + 1;
             }
         }
     }
@@ -108,6 +132,16 @@ function tick(event){
         cnv.height = window.innerHeight - 10;
         cnv.width = window.innerHeight - 10 + 256;
         
+    }
+    
+    if (currentPhase === "turnStart"){
+        currentPhase = "turn";
+        movesLeft = currentCharacter.movement;
+    }
+    
+    if (movesLeft === 0){
+        nextCharacter();
+        currentPhase = "turnStart";
     }
     
     stage.update(event);
@@ -224,7 +258,7 @@ function generateMap(){
     var volcanoData = {
         images: [img],
         frames: {width: 64, height: 64},
-        framerate: 100,
+        framerate: 10,
         animations: {
             exist:[0,1]
         }
@@ -503,13 +537,100 @@ function generateMap(){
                 gameWorld.addChild(block);
             }
             
-            if (map[i][j].action !== "nothing"){
+            if (map[i][j].action !== "nothing" && map[i][j].action !== "spawn"){
                 block = new createjs.Sprite(actionSheet, "exist");
                 block.x = i * 64;
                 block.y = j * 64;
                 gameWorld.addChild(block);
             }
         }
+    }
+}
+
+// Character generation based on classes given
+function generateCharacters(type1, type2, type3, type4){
+    // Give the character the stats based on the respective type given
+    // Default
+    img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = "./Images/DefaultCharacter.png";
+    var defaultCharacterData = {
+        images: [img],
+        frames: {width: 32, height: 32},
+        framerate: 5,
+        animations: {
+            exist:[0],
+            walk:[1,4],
+            walkLeft:[5,8],
+            punch:[9,10]
+        }
+    }
+    var defaultCharacterSheet = new createjs.SpriteSheet(defaultCharacterData);
+    
+    if (type1 === 'default'){
+        character1.class = "default";
+        character1.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character1.food = 2;
+        character1.movement = 4;
+        character1.sight = 1;
+    }
+    if (type2 === 'default'){
+        character2.class = "default";
+        character2.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character2.food = 2;
+        character2.movement = 4;
+        character2.sight = 1;
+    }
+    if (type3 === 'default'){
+        character3.class = "default";
+        character3.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character3.food = 2;
+        character3.movement = 4;
+        character3.sight = 1;
+    }
+    if (type4 === 'default'){
+        character4.class = "default";
+        character4.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+        character4.food = 2;
+        character4.movement = 4;
+        character4.sight = 1;
+    }
+    // Put them in the map[][] at spawn, and draw them in staggered per corner
+    character1.i = spawn.x;
+    character1.j = spawn.y;
+    character1.sprite.x = spawn.x * 64;
+    character1.sprite.y = spawn.y * 64;
+    gameWorld.addChild(character1.sprite);
+    
+    character2.i = spawn.x;
+    character2.j = spawn.y;
+    character2.sprite.x = spawn.x * 64 + 32;
+    character2.sprite.y = spawn.y * 64;
+    gameWorld.addChild(character2.sprite);
+    
+    character3.i = spawn.x;
+    character3.j = spawn.y;
+    character3.sprite.x = spawn.x * 64;
+    character3.sprite.y = spawn.y * 64 + 32;
+    gameWorld.addChild(character3.sprite);
+    
+    character4.i = spawn.x;
+    character4.j = spawn.y;
+    character4.sprite.x = spawn.x * 64 + 32;
+    character4.sprite.y = spawn.y * 64 + 32;
+    gameWorld.addChild(character4.sprite);
+}
+
+// Lets the next character take their turn
+function nextCharacter(){
+    if (currentCharacter === character1){
+        currentCharacter = character2;
+    } else if (currentCharacter === character2){
+        currentCharacter = character3;
+    } else if (currentCharacter === character3){
+        currentCharacter = character4;
+    } else{
+        currentCharacter = character1;
     }
 }
 
