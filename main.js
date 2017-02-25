@@ -513,7 +513,7 @@ function generateSideMenu(){
     var sideMenuBackground = new createjs.Shape(g1);
     sideMenu.addChild(sideMenuBackground);
     
-    var foodText = new createjs.Text(":" + foodPile, "64px Courier New", "black");
+    var foodText = new createjs.Text(":" + foodPile, "64px VT323", "black");
     foodText.x = 128;
     foodText.y = 128;
     sideMenu.addChild(foodText);
@@ -524,7 +524,7 @@ function generateSideMenu(){
     foodSprite.y = 128;
     sideMenu.addChild(foodSprite);
     
-    var woodText = new createjs.Text(":" + woodPile, "64px Courier New", "black");
+    var woodText = new createjs.Text(":" + woodPile, "64px VT323", "black");
     woodText.x = 128;
     woodText.y = 192;
     sideMenu.addChild(woodText);
