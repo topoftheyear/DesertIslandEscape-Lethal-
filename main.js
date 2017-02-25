@@ -15,9 +15,7 @@ var mapSize = 17;
 var spawn = {x:0, y:0};
 
 // Side Menu
-var g1;
-var sideMenuBackground;
-var sideMenu;
+var sideMenu = new createjs.Container();
 var foodPile;
 var woodPile;
 
@@ -38,6 +36,7 @@ function load(){
 
 function init(){
     gameWorld = new createjs.Container();
+    sideMenu = new createjs.Container();
     stage = new createjs.Stage("canvas");
     gameWorld.x = 0;
     gameWorld.y = 0;
@@ -46,18 +45,18 @@ function init(){
     
     generateMap();
     generateCharacters("default", "default", "default", "default");
-    
-    // Side menu
-    g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
-    sideMenuBackground = new createjs.Shape(g1);
+    generateSideMenu();
     
     // Map movement by mouse added
     gameWorld.addEventListener('mousedown', mouseDnD);
     
     stage.addChild(gameWorld);
-    stage.addChild(sideMenuGround);
+    stage.addChild(sideMenu);
     
+    // Game Initialization
     currentPhase = "turnStart";
+    foodPile = 16;
+    woodPile = 0;
     
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
@@ -142,14 +141,39 @@ function tick(event){
     if (currentPhase === "turnStart"){
         currentPhase = "turn";
         movesLeft = currentCharacter.movement;
-    }
-    
-    if (movesLeft === 0){
-        nextCharacter();
+    } else if (currentPhase === "turnEnd"){
+        foodPile = foodPile - character1.food - character2.food - character3.food - character4.food;
         currentPhase = "turnStart";
     }
     
+    if (movesLeft === 0 && currentPhase === "turn"){
+        nextCharacter();
+        if (currentCharacter === character1){
+            currentPhase = "turnEnd";
+        } else{
+            currentPhase = "turnStart";
+        }
+    }
+    
+    // Side Menu update
+    sideMenu.getChildAt(1).text = (":" + foodPile);
+    sideMenu.getChildAt(3).text = (":" + woodPile);
+    
     stage.update(event);
+}
+
+// Whaow
+function generateSpriteSheet(source, w, h, fps, anime){
+    var img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = source;
+    var data = {
+        images: [img],
+        frames: {width:w, height:h},
+        framerate: fps,
+        animations: anime
+    }
+    return data;
 }
 
 // Generates the map, complete with events and stuff
@@ -160,115 +184,14 @@ function generateMap(){
         map[i] = new Array(mapSize);
     }
     
-    // Water tile
-    var img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Water.png";
-    var waterData = {
-        images: [img],
-        frames: {width:64, height:64},
-        framerate: 10,
-        animations: {
-            exist:[0,15]
-        }
-    };
-    var waterSheet = new createjs.SpriteSheet(waterData);
-    
-    // Grass tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Grass.png";
-    var grassData = {
-        images: [img],
-        frames: {width:64, height:64},
-        framerate: 4,
-        animations: {
-            exist:[0,3]
-        }
-    };
-    var grassSheet = new createjs.SpriteSheet(grassData);
-    
-    // Sand tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Sand.png";
-    var sandData = {
-        images: [img],
-        frames: {width:64, height:64},
-        animations: {
-            exist:[0]
-        }
-    };
-    var sandSheet = new createjs.SpriteSheet(sandData);
-    
-    // Tree tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Tree.png";
-    var treeData = {
-        images: [img],
-        frames: {width: 64, height:64},
-        framerate: 4,
-        animations: {
-            exist:[0,7]
-        }
-    };
-    var treeSheet = new createjs.SpriteSheet(treeData);
-    
-    // Rock tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Rock.png";
-    var rockData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        animations: {
-            exist:[0]
-        }
-    }
-    var rockSheet = new createjs.SpriteSheet(rockData);
-    
-    // Bush tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Bush.png";
-    var bushData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        framerate: 4,
-        animations: {
-            exist:[0,3]
-        }
-    }
-    var bushSheet = new createjs.SpriteSheet(bushData);
-    
-    // Volcano tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Volcano.png";
-    var volcanoData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        framerate: 10,
-        animations: {
-            exist:[0,1]
-        }
-    }
-    var volcanoSheet = new createjs.SpriteSheet(volcanoData);
-    
-    // Action item
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Action.png";
-    var actionData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        framerate: 12,
-        animations: {
-            exist:[0,13]
-        }
-    }
-    var actionSheet = new createjs.SpriteSheet(actionData);
+    var waterSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Water.png", 64, 64, 10, {exist:[0,15]}));
+    var grassSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Grass.png", 64, 64, 4, {exist:[0,3]}));
+    var sandSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Sand.png", 64, 64, 0, {exist:[0]}));
+    var treeSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Tree.png", 64, 64, 4, {exist:[0,7]}));
+    var rockSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Rock.png", 64, 64, 0, {exist:[0]}));
+    var bushSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Bush.png", 64, 64, 4, {exist:[0,3]}));
+    var volcanoSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Volcano.png", 64, 64, 10, {exist:[0,1]}));
+    var actionSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Action.png", 64, 64, 12, {exist:[0,13]}));
     
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
@@ -581,6 +504,37 @@ function generateCharacters(type1, type2, type3, type4){
     character4.sprite.x = spawn.x * 64 + 32;
     character4.sprite.y = spawn.y * 64 + 32;
     gameWorld.addChild(character4.sprite);
+}
+
+// Generate the side menu
+function generateSideMenu(){
+    // Side menu
+    var g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
+    var sideMenuBackground = new createjs.Shape(g1);
+    sideMenu.addChild(sideMenuBackground);
+    
+    var foodText = new createjs.Text(":" + foodPile, "64px Courier New", "black");
+    foodText.x = 128;
+    foodText.y = 128;
+    sideMenu.addChild(foodText);
+    
+    var foodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Apple.png", 64, 64, 0, {exist:[0]}));
+    var foodSprite = new createjs.Sprite(foodSheet, "exist");
+    foodSprite.x = 64;
+    foodSprite.y = 128;
+    sideMenu.addChild(foodSprite);
+    
+    var woodText = new createjs.Text(":" + woodPile, "64px Courier New", "black");
+    woodText.x = 128;
+    woodText.y = 192;
+    sideMenu.addChild(woodText);
+    
+    var woodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Log.png", 64, 64, 0, {exist:[0]}));
+    var woodSprite = new createjs.Sprite(woodSheet, "exist");
+    woodSprite.x = 64;
+    woodSprite.y = 192;
+    sideMenu.addChild(woodSprite);
+    
 }
 
 // Lets the next character take their turn
