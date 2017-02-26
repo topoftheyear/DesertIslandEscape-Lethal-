@@ -28,7 +28,7 @@ var currentCharacter = character1;
 
 // Game stuff
 var movesLeft = 0;
-
+var daysRemaining = 0;
 
 function load(){
     init();
@@ -57,6 +57,7 @@ function init(){
     currentPhase = "turnStart";
     foodPile = 16;
     woodPile = 0;
+    daysRemaining = 7;
     
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
@@ -66,12 +67,12 @@ function init(){
 
 // Keyboard input
 function keyDown(event){
-    if (!movementOccuring){
+    if (!movementOccuring && currentPhase !== "gameOver"){
         var key = event.keyCode;
         
         if (key === 65){
             // A
-            if (!movementOccuring && map[currentCharacter.i-1][currentCharacter.j].type !== "water" && map[currentCharacter.i-1][currentCharacter.j].rock === false && map[currentCharacter.i-1][currentCharacter.j].volcano === false){
+            if (map[currentCharacter.i-1][currentCharacter.j].type !== "water" && map[currentCharacter.i-1][currentCharacter.j].rock === false && map[currentCharacter.i-1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walkLeft");
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 1000).call(handleComplete);
@@ -79,7 +80,7 @@ function keyDown(event){
             }
         } else if (key === 68){
             // D
-            if (!movementOccuring && map[currentCharacter.i+1][currentCharacter.j].type !== "water" && map[currentCharacter.i+1][currentCharacter.j].rock === false && map[currentCharacter.i+1][currentCharacter.j].volcano === false){
+            if (map[currentCharacter.i+1][currentCharacter.j].type !== "water" && map[currentCharacter.i+1][currentCharacter.j].rock === false && map[currentCharacter.i+1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walk");
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 1000).call(handleComplete);
@@ -87,7 +88,7 @@ function keyDown(event){
             }
         } else if (key === 87){
             // W
-            if (!movementOccuring && map[currentCharacter.i][currentCharacter.j-1].type !== "water" && map[currentCharacter.i][currentCharacter.j-1].rock === false && map[currentCharacter.i][currentCharacter.j-1].volcano === false){
+            if (map[currentCharacter.i][currentCharacter.j-1].type !== "water" && map[currentCharacter.i][currentCharacter.j-1].rock === false && map[currentCharacter.i][currentCharacter.j-1].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walkLeft");
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 1000).call(handleComplete);
@@ -95,7 +96,7 @@ function keyDown(event){
             }
         } else if (key === 83){
             // S
-            if (!movementOccuring && map[currentCharacter.i][currentCharacter.j+1].type !== "water" && map[currentCharacter.i][currentCharacter.j+1].rock === false && map[currentCharacter.i][currentCharacter.j+1].volcano === false){
+            if (map[currentCharacter.i][currentCharacter.j+1].type !== "water" && map[currentCharacter.i][currentCharacter.j+1].rock === false && map[currentCharacter.i][currentCharacter.j+1].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walk");
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 1000).call(handleComplete);
@@ -143,6 +144,7 @@ function tick(event){
         movesLeft = currentCharacter.movement;
     } else if (currentPhase === "turnEnd"){
         foodPile = foodPile - character1.food - character2.food - character3.food - character4.food;
+        daysRemaining--;
         currentPhase = "turnStart";
     }
     
@@ -155,9 +157,15 @@ function tick(event){
         }
     }
     
+    // Game loss check
+    if (daysRemaining === 0 || foodPile < 0){
+        currentPhase = "gameOver";
+    }
+    
     // Side Menu update
     sideMenu.getChildAt(1).text = (":" + foodPile);
     sideMenu.getChildAt(3).text = (":" + woodPile);
+    sideMenu.getChildAt(5).text = (":" + daysRemaining);
     
     stage.update(event);
 }
@@ -361,7 +369,13 @@ function generateMap(){
         for (var j = 0; j < map.length; j++){
             if (map[i][j].type !== "water" || map[i][j].rock === true){
                 if (map[i][j].bush === true){
-                    map[i][j].action = "something";
+                    if (randomNumber(1,3) === randomNumber(1,3)){
+                        map[i][j].action = "enemy";
+                    } else if (randomNumber(1,5) === randomNumber(1,5)){
+                        map[i][j].action = "pit";
+                    } else {
+                        map[i][j].action = "food";
+                    }
                 } else if (map[i][j].type === "tree"){
                     map[i][j].action = "tree";
                 }
@@ -513,27 +527,43 @@ function generateSideMenu(){
     var sideMenuBackground = new createjs.Shape(g1);
     sideMenu.addChild(sideMenuBackground);
     
+    // 0
     var foodText = new createjs.Text(":" + foodPile, "64px VT323", "black");
     foodText.x = 128;
     foodText.y = 128;
     sideMenu.addChild(foodText);
     
+    // 1
     var foodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Apple.png", 64, 64, 0, {exist:[0]}));
     var foodSprite = new createjs.Sprite(foodSheet, "exist");
     foodSprite.x = 64;
     foodSprite.y = 128;
     sideMenu.addChild(foodSprite);
     
+    // 2
     var woodText = new createjs.Text(":" + woodPile, "64px VT323", "black");
     woodText.x = 128;
     woodText.y = 192;
     sideMenu.addChild(woodText);
     
+    // 3
     var woodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Log.png", 64, 64, 0, {exist:[0]}));
     var woodSprite = new createjs.Sprite(woodSheet, "exist");
     woodSprite.x = 64;
     woodSprite.y = 192;
     sideMenu.addChild(woodSprite);
+    
+    // 4
+    var daysText = new createjs.Text(":" + daysRemaining, "64px VT323", "black");
+    daysText.x = 128;
+    daysText.y = 256;
+    sideMenu.addChild(daysText);
+    
+    // 5
+    var daysText2 = new createjs.Text("Days Left", "32px VT323", "black");
+    daysText2.x = 10;
+    daysText2.y = 272;
+    sideMenu.addChild(daysText2);
     
 }
 
