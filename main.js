@@ -199,6 +199,7 @@ function tick(event){
         sideMenu.getChildAt(1).text = (":" + foodPile);
         sideMenu.getChildAt(3).text = (":" + woodPile);
         sideMenu.getChildAt(5).text = (":" + daysRemaining);
+        sideMenu.getChildAt(7).text = (":" + movesLeft);
     }
     
     stage.update(event);
@@ -589,6 +590,18 @@ function generateSideMenu(){
     daysText2.x = 10;
     daysText2.y = 272;
     sideMenu.addChild(daysText2);
+    
+    // 7
+    var movesText = new createjs.Text(":" + movesLeft, "64px VT323", "black");
+    movesText.x = 128;
+    movesText.y = 320;
+    sideMenu.addChild(movesText);
+    
+    // 8
+    var movesText2 = new createjs.Text("Moves", "32px VT323", "black");
+    movesText2.x = 64;
+    movesText2.y = 336;
+    sideMenu.addChild(movesText2);
     
 }
 
