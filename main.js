@@ -25,6 +25,7 @@ var character2 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var character3 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var character4 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var currentCharacter = character1;
+var currentArrow;
 
 // Game stuff
 var movesLeft = 0;
@@ -38,7 +39,7 @@ function init(){
     gameWorld = new createjs.Container();
     sideMenu = new createjs.Container();
     stage = new createjs.Stage("canvas");
-    gameWorld.x = 0;
+    gameWorld.x = 256;
     gameWorld.y = 0;
     
     currentPhase = "menu";
@@ -59,6 +60,7 @@ function keyDown(event){
             if (map[currentCharacter.i-1][currentCharacter.j].type !== "water" && map[currentCharacter.i-1][currentCharacter.j].rock === false && map[currentCharacter.i-1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walkLeft");
+                createjs.Tween.get(currentArrow, {override:false}).to({x:currentCharacter.sprite.x - 64}, 1000);
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 1000).call(handleComplete);
                 currentCharacter.i = currentCharacter.i - 1;
             }
@@ -67,6 +69,7 @@ function keyDown(event){
             if (map[currentCharacter.i+1][currentCharacter.j].type !== "water" && map[currentCharacter.i+1][currentCharacter.j].rock === false && map[currentCharacter.i+1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walk");
+                createjs.Tween.get(currentArrow, {override:false}).to({x:currentCharacter.sprite.x + 64}, 1000);
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 1000).call(handleComplete);
                 currentCharacter.i = currentCharacter.i + 1;
             }
@@ -75,6 +78,7 @@ function keyDown(event){
             if (map[currentCharacter.i][currentCharacter.j-1].type !== "water" && map[currentCharacter.i][currentCharacter.j-1].rock === false && map[currentCharacter.i][currentCharacter.j-1].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walkLeft");
+                createjs.Tween.get(currentArrow, {override:false}).to({y:currentCharacter.sprite.y - 64 - 32}, 1000);
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j - 1;
             }
@@ -83,6 +87,7 @@ function keyDown(event){
             if (map[currentCharacter.i][currentCharacter.j+1].type !== "water" && map[currentCharacter.i][currentCharacter.j+1].rock === false && map[currentCharacter.i][currentCharacter.j+1].volcano === false){
                 movementOccuring = true;
                 currentCharacter.sprite.gotoAndPlay("walk");
+                createjs.Tween.get(currentArrow, {override:false}).to({y:currentCharacter.sprite.y + 64 - 32}, 1000);
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j + 1;
             }
@@ -138,14 +143,20 @@ function tick(event){
         // Map movement by mouse added
         gameWorld.addEventListener('mousedown', mouseDnD);
     
+        // Current player marker
+        currentArrow = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/CurrentArrow.png", 32, 32, 8, {exist:[0,3]})), "exist");
+        gameWorld.addChild(currentArrow);
+        
         stage.addChild(gameWorld);
         stage.addChild(sideMenu);
         
-            // Game Initialization
+        // Game Initialization
         currentPhase = "turnStart";
         foodPile = 16;
         woodPile = 0;
         daysRemaining = 7;
+        
+        
     
         currentPhase = "turnStart";
     }
@@ -153,6 +164,8 @@ function tick(event){
     if (currentPhase === "turnStart"){
         currentPhase = "turn";
         movesLeft = currentCharacter.movement;
+        currentArrow.x = currentCharacter.sprite.x;
+        currentArrow.y = currentCharacter.sprite.y - 32;
     } else if (currentPhase === "turnEnd"){
         foodPile = foodPile - character1.food - character2.food - character3.food - character4.food;
         daysRemaining--;
@@ -173,7 +186,7 @@ function tick(event){
         currentPhase = "gameOver";
     }
     
-    // Side Menu update
+    // Game stuff update
     if (currentPhase !== "menu" && currentPhase !== "gameStart"){
         sideMenu.getChildAt(1).text = (":" + foodPile);
         sideMenu.getChildAt(3).text = (":" + woodPile);
@@ -466,18 +479,7 @@ function generateCharacters(type1, type2, type3, type4){
     img = new Image();
     img.crossOrigin="Anonymous";
     img.src = "./Images/DefaultCharacter.png";
-    var defaultCharacterData = {
-        images: [img],
-        frames: {width: 32, height: 32},
-        framerate: 5,
-        animations: {
-            exist:[0],
-            walk:[1,4],
-            walkLeft:[5,8],
-            punch:[9,10]
-        }
-    }
-    var defaultCharacterSheet = new createjs.SpriteSheet(defaultCharacterData);
+    var defaultCharacterSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/DefaultCharacter.png", 32, 32, 5, {exist:[0], walk:[1,4], walkLeft:[5,8], punch:[9,10]}));
     
     if (type1 === 'default'){
         character1.class = "default";
