@@ -117,10 +117,14 @@ function mouseDnD(e){
         
         if (gameWorld.x > 256){
             gameWorld.x = 256;
+        } else if (gameWorld.x + (mapSize * 64) < stage.width){
+            gameWorld.x = stage.width - (mapSize * 64);
         }
             
         if (gameWorld.y > 0){
             gameWorld.y = 0;
+        } else if (gameWorld.y + (mapSize * 64) < stage.height){
+            gameWorld.y = stage.height - (mapSize * 64);
         }
     });
     gameWorld.addEventListener('pressup', function (e) {
@@ -136,6 +140,8 @@ function tick(event){
         var cnv = document.getElementById("canvas");
         cnv.height = window.innerHeight - 10;
         cnv.width = window.innerHeight - 10 + 256;
+        stage.height = cnv.height;
+        stage.width = cnv.width;
         
     }
     
