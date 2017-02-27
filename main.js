@@ -43,25 +43,6 @@ function init(){
     
     currentPhase = "menu";
     
-<<<<<<< HEAD
-    generateMap();
-    generateCharacters("default", "default", "default", "default");
-    generateSideMenu();
-    
-    // Map movement by mouse added
-    gameWorld.addEventListener('mousedown', mouseDnD);
-    
-    stage.addChild(gameWorld);
-    stage.addChild(sideMenu);
-    
-    // Game Initialization
-    currentPhase = "turnStart";
-    foodPile = 16;
-    woodPile = 0;
-    daysRemaining = 7;
-    
-=======
->>>>>>> refs/remotes/origin/master
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
         
@@ -152,16 +133,19 @@ function tick(event){
     if (currentPhase === "gameStart"){
         generateMap();
         generateCharacters("default", "default", "default", "default");
-    
-        // Side menu
-        g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
-        sideMenu = new createjs.Shape(g1);
+        generateSideMenu();
     
         // Map movement by mouse added
         gameWorld.addEventListener('mousedown', mouseDnD);
     
         stage.addChild(gameWorld);
         stage.addChild(sideMenu);
+        
+            // Game Initialization
+        currentPhase = "turnStart";
+        foodPile = 16;
+        woodPile = 0;
+        daysRemaining = 7;
     
         currentPhase = "turnStart";
     }
@@ -185,14 +169,16 @@ function tick(event){
     }
     
     // Game loss check
-    if (daysRemaining === 0 || foodPile < 0){
+    if (currentPhase !== "menu" && currentPhase !== "gameStart" && daysRemaining === 0 || foodPile < 0){
         currentPhase = "gameOver";
     }
     
     // Side Menu update
-    sideMenu.getChildAt(1).text = (":" + foodPile);
-    sideMenu.getChildAt(3).text = (":" + woodPile);
-    sideMenu.getChildAt(5).text = (":" + daysRemaining);
+    if (currentPhase !== "menu" && currentPhase !== "gameStart"){
+        sideMenu.getChildAt(1).text = (":" + foodPile);
+        sideMenu.getChildAt(3).text = (":" + woodPile);
+        sideMenu.getChildAt(5).text = (":" + daysRemaining);
+    }
     
     stage.update(event);
 }
