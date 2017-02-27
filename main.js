@@ -43,6 +43,7 @@ function init(){
     
     currentPhase = "menu";
     
+<<<<<<< HEAD
     generateMap();
     generateCharacters("default", "default", "default", "default");
     generateSideMenu();
@@ -59,6 +60,8 @@ function init(){
     woodPile = 0;
     daysRemaining = 7;
     
+=======
+>>>>>>> refs/remotes/origin/master
     createjs.Ticker.setFPS(60);
     createjs.Ticker.addEventListener("tick", tick);
         
@@ -102,6 +105,9 @@ function keyDown(event){
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j + 1;
             }
+        } else if (key === 13){
+            // Enter key for temporary menu bypass
+            currentPhase = "gameStart";
         }
     }
 }
@@ -137,6 +143,27 @@ function tick(event){
         cnv.height = window.innerHeight - 10;
         cnv.width = window.innerHeight - 10 + 256;
         
+    }
+    
+    if (currentPhase === "menu"){
+        
+    }
+    
+    if (currentPhase === "gameStart"){
+        generateMap();
+        generateCharacters("default", "default", "default", "default");
+    
+        // Side menu
+        g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
+        sideMenu = new createjs.Shape(g1);
+    
+        // Map movement by mouse added
+        gameWorld.addEventListener('mousedown', mouseDnD);
+    
+        stage.addChild(gameWorld);
+        stage.addChild(sideMenu);
+    
+        currentPhase = "turnStart";
     }
     
     if (currentPhase === "turnStart"){

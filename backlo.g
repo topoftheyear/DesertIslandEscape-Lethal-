@@ -1,10 +1,10 @@
 Basics:
 
-  Player movement
-  Turn-based system
+  Player movement ✔
+  Turn-based system ✔
   Events
   Menu
-  Randomly generated island
+  Randomly generated island ✔
   Win/lose conditions
  
 Good Additions:
