@@ -114,6 +114,14 @@ function mouseDnD(e){
         
         gameWorld.posX = e.stageX;
         gameWorld.posY = e.stageY;
+        
+        if (gameWorld.x > 256){
+            gameWorld.x = 256;
+        }
+            
+        if (gameWorld.y > 0){
+            gameWorld.y = 0;
+        }
     });
     gameWorld.addEventListener('pressup', function (e) {
         e.target.removeAllEventListeners();
@@ -155,7 +163,7 @@ function tick(event){
         foodPile = 16;
         woodPile = 0;
         daysRemaining = 7;
-        
+        currentCharacter = character1;
         
     
         currentPhase = "turnStart";
@@ -481,34 +489,36 @@ function generateCharacters(type1, type2, type3, type4){
     img.src = "./Images/DefaultCharacter.png";
     var defaultCharacterSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/DefaultCharacter.png", 32, 32, 5, {exist:[0], walk:[1,4], walkLeft:[5,8], punch:[9,10]}));
     
-    if (type1 === 'default'){
-        character1.class = "default";
-        character1.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character1.food = 2;
-        character1.movement = 4;
-        character1.sight = 1;
+    for (var i = 1; i < 5; i++){
+        var type;
+        switch(i){
+            case 1:
+                currentCharacter = character1;
+                type = type1;
+                break;
+            case 2:
+                currentCharacter = character2;
+                type = type2;
+                break;
+            case 3:
+                currentCharacter = character3;
+                type = type3;
+                break;
+            case 4:
+                currentCharacter = character4;
+                type = type4;
+                break;
+        }
+        
+        if (type === "default"){
+            currentCharacter.class = "default";
+            currentCharacter.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+            currentCharacter.food = 2;
+            currentCharacter.movement = 4;
+            currentCharacter.sight = 1;
+        }
     }
-    if (type2 === 'default'){
-        character2.class = "default";
-        character2.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character2.food = 2;
-        character2.movement = 4;
-        character2.sight = 1;
-    }
-    if (type3 === 'default'){
-        character3.class = "default";
-        character3.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character3.food = 2;
-        character3.movement = 4;
-        character3.sight = 1;
-    }
-    if (type4 === 'default'){
-        character4.class = "default";
-        character4.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character4.food = 2;
-        character4.movement = 4;
-        character4.sight = 1;
-    }
+
     // Put them in the map[][] at spawn, and draw them in staggered per corner
     character1.i = spawn.x;
     character1.j = spawn.y;
