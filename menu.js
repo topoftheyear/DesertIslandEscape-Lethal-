@@ -36,18 +36,21 @@ var selectButton = {
         select:[1]
     }
 };
-
+function init(){load();}
+function load(){startMenu();}
 //Menu container
 var menu = new createjs.Container();
+menu.x = 300;
+menu.y = 300;
 
-
+var stage = new createjs.Stage("canvas");
 function startMenu(){
     leftButton.x = 300;
     leftButton.y = 300;
-    rightButton.x = 300;
+    rightButton.x = 500;
     rightButton.y = 300;
-    selectButton.x = 300;
-    selecttButton.y = 300;
+    selectButton.x = 400;
+    selectButton.y = 300;
     menu.addChild(leftButton,rightButton,selectButton);
     stage.addChild(menu);
 }
