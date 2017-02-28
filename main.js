@@ -8,6 +8,8 @@ var currentPhase;
 
 // Tracks whether movement is currently occurring
 var movementOccuring = false;
+var actionOccuring = false;
+var firstTime = false;
 
 // Map
 var map;
@@ -18,6 +20,8 @@ var spawn = {x:0, y:0};
 var sideMenu = new createjs.Container();
 var foodPile;
 var woodPile;
+var movesLeft = 0;
+var daysRemaining = 0;
 
 // Characters
 var character1 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
@@ -27,9 +31,6 @@ var character4 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var currentCharacter = character1;
 var currentArrow;
 
-// Game stuff
-var movesLeft = 0;
-var daysRemaining = 0;
 
 function load(){
     init();
@@ -52,7 +53,7 @@ function init(){
 
 // Keyboard input
 function keyDown(event){
-    if (!movementOccuring && currentPhase !== "gameOver"){
+    if (!movementOccuring && currentPhase !== "gameOver" && !actionOccuring){
         var key = event.keyCode;
         
         if (key === 65){
@@ -109,28 +110,31 @@ function mouseDnD(e){
     gameWorld.posX = e.stageX;
     gameWorld.posY = e.stageY;
     gameWorld.addEventListener('pressmove', function (e) {
-        gameWorld.x = -gameWorld.posX + e.stageX + gameWorld.x; 
-        gameWorld.y = -gameWorld.posY + e.stageY + gameWorld.y; 
+        if (!actionOccuring){
+            gameWorld.x = -gameWorld.posX + e.stageX + gameWorld.x; 
+            gameWorld.y = -gameWorld.posY + e.stageY + gameWorld.y; 
         
-        gameWorld.posX = e.stageX;
-        gameWorld.posY = e.stageY;
+            gameWorld.posX = e.stageX;
+            gameWorld.posY = e.stageY;
         
-        if (gameWorld.x > 256){
-            gameWorld.x = 256;
-        } else if (gameWorld.x + (mapSize * 64) < stage.width){
-            gameWorld.x = stage.width - (mapSize * 64);
-        }
+            if (gameWorld.x > 256){
+                gameWorld.x = 256;
+            } else if (gameWorld.x + (mapSize * 64) < stage.width){
+                gameWorld.x = stage.width - (mapSize * 64);
+            }
             
-        if (gameWorld.y > 0){
-            gameWorld.y = 0;
-        } else if (gameWorld.y + (mapSize * 64) < stage.height){
-            gameWorld.y = stage.height - (mapSize * 64);
+            if (gameWorld.y > 0){
+                gameWorld.y = 0;
+            } else if (gameWorld.y + (mapSize * 64) < stage.height){
+                gameWorld.y = stage.height - (mapSize * 64);
+            }
         }
     });
     gameWorld.addEventListener('pressup', function (e) {
         e.target.removeAllEventListeners();
     });
 }
+
 
 // This method is essentially what should happen every frame regardless of events
 function tick(event){
@@ -149,55 +153,106 @@ function tick(event){
         
     }
     
-    if (currentPhase === "gameStart"){
-        generateMap();
-        generateCharacters("default", "default", "default", "default");
-        generateSideMenu();
+    if (!actionOccuring){
+        if (currentPhase === "gameStart"){
+            generateMap();
+            generateCharacters("default", "default", "default", "default");
+            generateSideMenu();
     
-        // Map movement by mouse added
-        gameWorld.addEventListener('mousedown', mouseDnD);
+            // Map movement by mouse added
+            gameWorld.addEventListener('mousedown', mouseDnD);
     
-        // Current player marker
-        currentArrow = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/CurrentArrow.png", 32, 32, 8, {exist:[0,3]})), "exist");
-        gameWorld.addChild(currentArrow);
+            // Current player marker
+            currentArrow = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/CurrentArrow.png", 32, 32, 8, {exist:[0,3]})), "exist");
+            gameWorld.addChild(currentArrow);
         
-        stage.addChild(gameWorld);
-        stage.addChild(sideMenu);
+            stage.addChild(gameWorld);
+            stage.addChild(sideMenu);
         
-        // Game Initialization
-        currentPhase = "turnStart";
-        foodPile = 16;
-        woodPile = 0;
-        daysRemaining = 7;
-        currentCharacter = character1;
+            // Game Initialization
+            currentPhase = "turnStart";
+            foodPile = 16;
+            woodPile = 0;
+            daysRemaining = 7;
+            currentCharacter = character1;
         
     
-        currentPhase = "turnStart";
-    }
-    
-    if (currentPhase === "turnStart"){
-        currentPhase = "turn";
-        movesLeft = currentCharacter.movement;
-        currentArrow.x = currentCharacter.sprite.x;
-        currentArrow.y = currentCharacter.sprite.y - 32;
-    } else if (currentPhase === "turnEnd"){
-        foodPile = foodPile - character1.food - character2.food - character3.food - character4.food;
-        daysRemaining--;
-        currentPhase = "turnStart";
-    }
-    
-    if (movesLeft === 0 && currentPhase === "turn"){
-        nextCharacter();
-        if (currentCharacter === character1){
-            currentPhase = "turnEnd";
-        } else{
             currentPhase = "turnStart";
         }
-    }
     
-    // Game loss check
-    if (currentPhase !== "menu" && currentPhase !== "gameStart" && daysRemaining === 0 || foodPile < 0){
-        currentPhase = "gameOver";
+        // Sets up the turn
+        if (currentPhase === "turnStart"){
+            currentPhase = "turn";
+            movesLeft = currentCharacter.movement;
+            currentArrow.x = currentCharacter.sprite.x;
+            currentArrow.y = currentCharacter.sprite.y - 32;
+        } else if (currentPhase === "turnEnd"){
+            foodPile = foodPile - character1.food - character2.food - character3.food - character4.food;
+            daysRemaining--;
+            currentPhase = "turnStart";
+        }
+    
+        // Checks if the space the current character is on has an action
+        if (currentPhase === "turn" && map[currentCharacter.i][currentCharacter.j].action !== "nothing" && map[currentCharacter.i][currentCharacter.j].action !== "spawn" && !movementOccuring){
+            actionOccuring = true;
+            firstTime = true;
+        }
+    
+        // Next character selector
+        if (movesLeft === 0 && currentPhase === "turn"){
+            nextCharacter();
+            if (currentCharacter === character1){
+                currentPhase = "turnEnd";
+            } else{
+                currentPhase = "turnStart";
+            }
+        }
+    
+        // Game loss check
+        if (currentPhase !== "menu" && currentPhase !== "gameStart" && daysRemaining === 0 || foodPile < 0){
+            currentPhase = "gameOver";
+        }
+    } else{
+        if (firstTime){
+            var yesSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/YesButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
+            var noSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/NoButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
+            //yesSprite.x = ((stage.width - 256) / 2 - 10);
+            //yesSprite.y = 54;
+            //noSprite.x = ((stage.width - 256) / 2 + 74);
+            //noSprite.y = 54;
+            
+            popup = new createjs.Container();
+            popup.x = ((stage.width - 256) / 2) - 128;
+            popup.y = -256;
+    
+            var g1 = new createjs.Graphics().beginFill("black").drawRoundRect((stage.width - 256) / 2 - 128, -128, 384, 256, 10);
+            var popupBackground = new createjs.Shape(g1);
+            var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect((stage.width - 256) / 2 - 123, -123, 374, 246, 30);
+            var popupBackground2 = new createjs.Shape(g2);
+            popup.addChild(popupBackground, popupBackground2);
+            
+            action = map[currentCharacter.i][currentCharacter.j];
+            //if (action === "food"){
+                yesSprite.x = ((stage.width - 256) / 2 + 32);
+                yesSprite.y = 54;
+                
+                popup.addChild(yesSprite);
+                
+                var text1 = new createjs.Text("You wandered across a bush", "32px VT323", "black");
+                text1.x = ((stage.width - 256) / 2 - 128 + 24);
+                text1.y = -118;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("and found some food in it!", "32px VT323", "black");
+                text2.x = ((stage.width - 256) / 2 - 128 + 24);
+                text2.y = -76;
+                popup.addChild(text2);
+            //}
+            stage.addChild(popup);
+            
+            createjs.Tween.get(popup, {override:false}).to({y:stage.height / 2}, 1000);
+            firstTime = false;
+        }            
     }
     
     // Game stuff update
