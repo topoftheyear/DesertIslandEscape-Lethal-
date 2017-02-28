@@ -98,7 +98,7 @@ function keyDown(event){
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j + 1;
             }
-        } else if (key === 13){
+        } else if (key === 13 && currentPhase === "menu"){
             // Enter key for temporary menu bypass
             currentPhase = "gameStart";
         }
@@ -205,7 +205,7 @@ function tick(event){
         }
     
         // Next character selector
-        if (movesLeft === 0 && currentPhase === "turn"){
+        if (movesLeft === 0 && currentPhase === "turn" && !actionOccuring){
             nextCharacter();
             if (currentCharacter === character1){
                 currentPhase = "turnEnd";
@@ -237,7 +237,7 @@ function tick(event){
             
             if (action === "food"){
                 var fruit = "";
-                switch(randomNumber(1,5)){
+                switch(randomNumber(1,8)){
                     case 1:
                         fruit = "bananas";
                         break;
@@ -272,8 +272,8 @@ function tick(event){
                         e.target.removeAllEventListeners();
                         yesSprite.gotoAndPlay("exist");
                         accept = 1;
-                    })
-                })
+                    });
+                });
                 popup.addChild(yesSprite);
                 
                 var text1 = new createjs.Text("You wandered across a bush", "32px VT323", "black");
