@@ -2,14 +2,20 @@
 var stage;
 // Container the map and characters go into
 var gameWorld;
+// Popup window
+var popup;
+var amount;
 
-// Current phase tracker, just in case
+// Current phase tracker
 var currentPhase;
 
 // Tracks whether movement is currently occurring
 var movementOccuring = false;
 var actionOccuring = false;
 var firstTime = false;
+
+// Tracks event accept state, 2 for null, 1 for yes, 0 for no
+var accept = 2;
 
 // Map
 var map;
@@ -212,58 +218,116 @@ function tick(event){
         if (currentPhase !== "menu" && currentPhase !== "gameStart" && daysRemaining === 0 || foodPile < 0){
             currentPhase = "gameOver";
         }
-    } else{
+    } else {
+        var action = map[currentCharacter.i][currentCharacter.j].action;
         if (firstTime){
+            accept = 2;
             var yesSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/YesButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
             var noSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/NoButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
-            //yesSprite.x = ((stage.width - 256) / 2 - 10);
-            //yesSprite.y = 54;
-            //noSprite.x = ((stage.width - 256) / 2 + 74);
-            //noSprite.y = 54;
             
             popup = new createjs.Container();
-            popup.x = ((stage.width - 256) / 2) - 128;
+            popup.x = 256;
             popup.y = -256;
     
-            var g1 = new createjs.Graphics().beginFill("black").drawRoundRect((stage.width - 256) / 2 - 128, -128, 384, 256, 10);
+            var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(popup.x, popup.y, 384, 256, 10);
             var popupBackground = new createjs.Shape(g1);
-            var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect((stage.width - 256) / 2 - 123, -123, 374, 246, 30);
+            var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(popup.x + 5, popup.y + 5, 374, 246, 30);
             var popupBackground2 = new createjs.Shape(g2);
             popup.addChild(popupBackground, popupBackground2);
             
-            action = map[currentCharacter.i][currentCharacter.j];
-            //if (action === "food"){
-                yesSprite.x = ((stage.width - 256) / 2 + 32);
-                yesSprite.y = 54;
+            if (action === "food"){
+                var fruit = "";
+                switch(randomNumber(1,5)){
+                    case 1:
+                        fruit = "bananas";
+                        break;
+                    case 2:
+                        fruit = "mangoes";
+                        break;
+                    case 3:
+                        fruit = "pineapples";
+                        break;
+                    case 4:
+                        fruit = "coconuts";
+                        break;
+                    case 5:
+                        fruit = "durians";
+                        break;
+                    case 6:
+                        fruit = "kiwis";
+                        break;
+                    case 7:
+                        fruit = "tangerines";
+                        break;
+                    case 8:
+                        fruit = "guavas";
+                        break;
+                }
                 
+                yesSprite.x = popup.x + 160;
+                yesSprite.y = popup.y + 182;
+                yesSprite.addEventListener('mousedown', function(e){
+                    yesSprite.gotoAndPlay("held");
+                    yesSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        yesSprite.gotoAndPlay("exist");
+                        accept = 1;
+                    })
+                })
                 popup.addChild(yesSprite);
                 
                 var text1 = new createjs.Text("You wandered across a bush", "32px VT323", "black");
-                text1.x = ((stage.width - 256) / 2 - 128 + 24);
-                text1.y = -118;
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
                 popup.addChild(text1);
                 
                 var text2 = new createjs.Text("and found some food in it!", "32px VT323", "black");
-                text2.x = ((stage.width - 256) / 2 - 128 + 24);
-                text2.y = -76;
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
                 popup.addChild(text2);
-            //}
+                
+                amount = randomNumber(3,6);
+                var text3 = new createjs.Text("You got " + amount + " " + fruit + "!", "32px VT323", "black");
+                text3.x = popup.x + 24;
+                text3.y = popup.y + 116;
+                popup.addChild(text3);
+            } else{
+                accept = 1;
+            }
             stage.addChild(popup);
             
             createjs.Tween.get(popup, {override:false}).to({y:stage.height / 2}, 1000);
             firstTime = false;
-        }            
+            
+        }
+        if (accept === 0){
+                
+        } else if (accept === 1){
+            createjs.Tween.get(popup, {override:false}).to({y:-256}, 1000).call(handleSuccess);
+            accept = 2;
+        }         
     }
     
     // Game stuff update
     if (currentPhase !== "menu" && currentPhase !== "gameStart"){
-        sideMenu.getChildAt(1).text = (":" + foodPile);
-        sideMenu.getChildAt(3).text = (":" + woodPile);
-        sideMenu.getChildAt(5).text = (":" + daysRemaining);
-        sideMenu.getChildAt(7).text = (":" + movesLeft);
+        sideMenu.getChildAt(2).text = (":" + foodPile);
+        sideMenu.getChildAt(4).text = (":" + woodPile);
+        sideMenu.getChildAt(6).text = (":" + daysRemaining);
+        sideMenu.getChildAt(8).text = (":" + movesLeft);
     }
     
     stage.update(event);
+}
+
+function handleSuccess(){
+    if (map[currentCharacter.i][currentCharacter.j].action === "food"){
+        foodPile += amount;
+    }
+    actionOccuring = false;
+    popup.removeAllChildren();
+    map[currentCharacter.i][currentCharacter.j].action = "nothing";
+    firstTime = true;
+    map[currentCharacter.i][currentCharacter.j].actionSprite.visible = false;
 }
 
 // Whaow
@@ -287,15 +351,6 @@ function generateMap(){
     for (var i = 0; i < map.length; i++){
         map[i] = new Array(mapSize);
     }
-    
-    var waterSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Water.png", 64, 64, 10, {exist:[0,15]}));
-    var grassSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Grass.png", 64, 64, 4, {exist:[0,3]}));
-    var sandSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Sand.png", 64, 64, 0, {exist:[0]}));
-    var treeSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Tree.png", 64, 64, 4, {exist:[0,7]}));
-    var rockSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Rock.png", 64, 64, 15, {exist:[0], destroy:[1,10]}));
-    var bushSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Bush.png", 64, 64, 4, {exist:[0,3]}));
-    var volcanoSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Volcano.png", 64, 64, 10, {exist:[0,1]}));
-    var actionSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Action.png", 64, 64, 12, {exist:[0,13]}));
     
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
@@ -329,7 +384,7 @@ function generateMap(){
             }
             
             // Add the selected block to the map
-            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false, fog:false, volcano:false};
+            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false, fog:false, volcano:false, actionSprite:null};
         }
     }
     
@@ -499,6 +554,20 @@ function generateMap(){
     }
     
     // Draw the map
+    drawMap();
+}
+
+// Draws the map
+function drawMap(){
+    var waterSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Water.png", 64, 64, 10, {exist:[0,15]}));
+    var grassSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Grass.png", 64, 64, 4, {exist:[0,3]}));
+    var sandSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Sand.png", 64, 64, 0, {exist:[0]}));
+    var treeSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Tree.png", 64, 64, 4, {exist:[0,7]}));
+    var rockSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Rock.png", 64, 64, 15, {exist:[0], destroy:[1,10]}));
+    var bushSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Bush.png", 64, 64, 4, {exist:[0,3]}));
+    var volcanoSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Volcano.png", 64, 64, 10, {exist:[0,1]}));
+    var actionSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Action.png", 64, 64, 12, {exist:[0,13]}));
+    
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
             var block;
@@ -536,6 +605,7 @@ function generateMap(){
                 block = new createjs.Sprite(actionSheet, "exist");
                 block.x = i * 64;
                 block.y = j * 64;
+                map[i][j].actionSprite = block;
                 gameWorld.addChild(block);
             }
         }
@@ -586,67 +656,76 @@ function generateCharacters(type1, type2, type3, type4){
     character1.j = spawn.y;
     character1.sprite.x = spawn.x * 64;
     character1.sprite.y = spawn.y * 64;
-    gameWorld.addChild(character1.sprite);
     
     character2.i = spawn.x;
     character2.j = spawn.y;
     character2.sprite.x = spawn.x * 64 + 32;
     character2.sprite.y = spawn.y * 64;
-    gameWorld.addChild(character2.sprite);
     
     character3.i = spawn.x;
     character3.j = spawn.y;
     character3.sprite.x = spawn.x * 64;
     character3.sprite.y = spawn.y * 64 + 32;
-    gameWorld.addChild(character3.sprite);
     
     character4.i = spawn.x;
     character4.j = spawn.y;
     character4.sprite.x = spawn.x * 64 + 32;
     character4.sprite.y = spawn.y * 64 + 32;
+    
+    drawCharacters();
+}
+
+// Draws the characters
+function drawCharacters(){
+    gameWorld.addChild(character1.sprite);
+    gameWorld.addChild(character2.sprite);
+    gameWorld.addChild(character3.sprite);
     gameWorld.addChild(character4.sprite);
 }
 
 // Generate the side menu
 function generateSideMenu(){
     // Side menu
-    var g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
+    var g1 = new createjs.Graphics().beginFill("gray").drawRect(0, 0, 256, window.innerHeight);
     var sideMenuBackground = new createjs.Shape(g1);
     sideMenu.addChild(sideMenuBackground);
+    var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(5, 5, 246, window.innerHeight - 20, 30);
+    var sideMenuBackground2 = new createjs.Shape(g2);
+    sideMenu.addChild(sideMenuBackground2);
     
-    // 0
+    // 1
     var foodText = new createjs.Text(":" + foodPile, "64px VT323", "black");
     foodText.x = 128;
     foodText.y = 128;
     sideMenu.addChild(foodText);
     
-    // 1
+    // 2
     var foodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Apple.png", 64, 64, 0, {exist:[0]}));
     var foodSprite = new createjs.Sprite(foodSheet, "exist");
     foodSprite.x = 64;
     foodSprite.y = 128;
     sideMenu.addChild(foodSprite);
     
-    // 2
+    // 3
     var woodText = new createjs.Text(":" + woodPile, "64px VT323", "black");
     woodText.x = 128;
     woodText.y = 192;
     sideMenu.addChild(woodText);
     
-    // 3
+    // 4
     var woodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Log.png", 64, 64, 0, {exist:[0]}));
     var woodSprite = new createjs.Sprite(woodSheet, "exist");
     woodSprite.x = 64;
     woodSprite.y = 192;
     sideMenu.addChild(woodSprite);
     
-    // 4
+    // 5
     var daysText = new createjs.Text(":" + daysRemaining, "64px VT323", "black");
     daysText.x = 128;
     daysText.y = 256;
     sideMenu.addChild(daysText);
     
-    // 5
+    // 6
     var daysText2 = new createjs.Text("Days Left", "32px VT323", "black");
     daysText2.x = 10;
     daysText2.y = 272;
