@@ -473,10 +473,10 @@ function handleCowardice(){
     currentCharacter.j = previousSpace.y;
     currentCharacter.sprite.gotoAndPlay("walk");
     movementOccuring = true;
-    createjs.Tween.get(currentArrow, {override:false}).to({x:previousSpace.x * 64}, 1000);
-    createjs.Tween.get(currentArrow, {override:false}).to({y:previousSpace.y * 64 - 32}, 1000);
-    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:previousSpace.x * 64}, 1000);
-    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:previousSpace.y * 64}, 1000).call(handleComplete);
+    createjs.Tween.get(currentArrow, {override:false}).to({x:previousSpace.x * 64 + currentCharacter.sprite.x % 64}, 1000);
+    createjs.Tween.get(currentArrow, {override:false}).to({y:previousSpace.y * 64 - 32 + currentCharacter.sprite.y % 64}, 1000);
+    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:previousSpace.x * 64 + currentCharacter.sprite.x % 64}, 1000);
+    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:previousSpace.y * 64 + currentCharacter.sprite.y % 64}, 1000).call(handleComplete);
     firstTime = true;
     actionOccuring = false;
 }
