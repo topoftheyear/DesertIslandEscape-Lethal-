@@ -235,6 +235,11 @@ function tick(event){
             var popupBackground2 = new createjs.Shape(g2);
             popup.addChild(popupBackground, popupBackground2);
             
+            var textResult = new createjs.Text("", "32px VT323", "black");
+            textResult.x = popup.x + 24;
+            textResult.y = popup.y + 116;
+            popup.addChild(textResult);
+            
             if (action === "food"){
                 var fruit = "";
                 switch(randomNumber(1,8)){
@@ -335,7 +340,7 @@ function tick(event){
                 text1.y = popup.y + 32;
                 popup.addChild(text1);
                 
-                var text2 = new createjs.Text("Check if you can make it out!", "32px VT323", "black");
+                var text2 = new createjs.Text("Can you escape?", "32px VT323", "black");
                 text2.x = popup.x + 24;
                 text2.y = popup.y + 74;
                 popup.addChild(text2);
@@ -349,20 +354,14 @@ function tick(event){
             
         }
         if (accept === 0){
-            var textResult = new createjs.Text("You failed!", "32px VT323", "black");
-            textResult.x = popup.x + 24;
-            textResult.y = popup.y - 462;
-            popup.addChild(textResult);
+            popup.getChildAt(2).text = ("You failed!");
             createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleFailure);
             accept = 2;
         } else if (accept === 1){
             if (action === "pit"){
-                var textResult = new createjs.Text("You succeeded!", "32px VT323", "black");
-                textResult.x = popup.x + 24;
-                textResult.y = popup.y - 462;
-                popup.addChild(textResult);
+                popup.getChildAt(2).text = ("You succeeded!");
             }
-            createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleSuccess)
+            createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleSuccess);
             accept = 2;
         }         
     }
