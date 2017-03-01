@@ -21,6 +21,7 @@ var accept = 2;
 var map;
 var mapSize = 17;
 var spawn = {x:0, y:0};
+var previousSpace = {x:0, y:0};
 
 // Side Menu
 var sideMenu = new createjs.Container();
@@ -60,6 +61,8 @@ function init(){
 // Keyboard input
 function keyDown(event){
     if (!movementOccuring && currentPhase !== "gameOver" && !actionOccuring){
+        previousSpace.x = currentCharacter.i;
+        previousSpace.y = currentCharacter.j;
         var key = event.keyCode;
         
         if (key === 65){
@@ -205,7 +208,7 @@ function tick(event){
         }
     
         // Next character selector
-        if (movesLeft < 1 && currentPhase === "turn" && !actionOccuring){
+        if (movesLeft < 1 && currentPhase === "turn" && !actionOccuring && !movementOccuring){
             nextCharacter();
             if (currentCharacter === character1){
                 currentPhase = "turnEnd";
@@ -222,6 +225,7 @@ function tick(event){
         var action = map[currentCharacter.i][currentCharacter.j].action;
         if (firstTime){
             accept = 2;
+            var selectSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png", 128, 64, 0, {exist:[0], held:[1]})), "exist");
             var yesSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/YesButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
             var noSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/NoButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
             
@@ -269,17 +273,17 @@ function tick(event){
                         break;
                 }
                 
-                yesSprite.x = popup.x + 160;
-                yesSprite.y = popup.y + 182;
-                yesSprite.addEventListener('mousedown', function(e){
-                    yesSprite.gotoAndPlay("held");
-                    yesSprite.addEventListener('pressup', function(e){
+                selectSprite.x = popup.x + 124;
+                selectSprite.y = popup.y + 182;
+                selectSprite.addEventListener('mousedown', function(e){
+                    selectSprite.gotoAndPlay("held");
+                    selectSprite.addEventListener('pressup', function(e){
                         e.target.removeAllEventListeners();
-                        yesSprite.gotoAndPlay("exist");
+                        selectSprite.gotoAndPlay("exist");
                         accept = 1;
                     });
                 });
-                popup.addChild(yesSprite);
+                popup.addChild(selectSprite);
                 
                 var text1 = new createjs.Text("You wandered across a bush", "32px VT323", "black");
                 text1.x = popup.x + 24;
@@ -297,17 +301,17 @@ function tick(event){
                 text3.y = popup.y + 116;
                 popup.addChild(text3);
             } else if (action === "tree"){
-                yesSprite.x = popup.x + 160;
-                yesSprite.y = popup.y + 182;
-                yesSprite.addEventListener('mousedown', function(e){
-                    yesSprite.gotoAndPlay("held");
-                    yesSprite.addEventListener('pressup', function(e){
+                selectSprite.x = popup.x + 124;
+                selectSprite.y = popup.y + 182;
+                selectSprite.addEventListener('mousedown', function(e){
+                    selectSprite.gotoAndPlay("held");
+                    selectSprite.addEventListener('pressup', function(e){
                         e.target.removeAllEventListeners();
-                        yesSprite.gotoAndPlay("exist");
+                        selectSprite.gotoAndPlay("exist");
                         accept = 1;
                     });
                 });
-                popup.addChild(yesSprite);
+                popup.addChild(selectSprite);
                 
                 var text1 = new createjs.Text("You found a tree!", "32px VT323", "black");
                 text1.x = popup.x + 24;
@@ -319,13 +323,13 @@ function tick(event){
                 text2.y = popup.y + 74;
                 popup.addChild(text2);
             } else if (action === "pit"){
-                yesSprite.x = popup.x + 160;
-                yesSprite.y = popup.y + 182;
-                yesSprite.addEventListener('mousedown', function(e){
-                    yesSprite.gotoAndPlay("held");
-                    yesSprite.addEventListener('pressup', function(e){
+                selectSprite.x = popup.x + 124;
+                selectSprite.y = popup.y + 182;
+                selectSprite.addEventListener('mousedown', function(e){
+                    selectSprite.gotoAndPlay("held");
+                    selectSprite.addEventListener('pressup', function(e){
                         e.target.removeAllEventListeners();
-                        yesSprite.gotoAndPlay("exist");
+                        selectSprite.gotoAndPlay("exist");
                         if (randomNumber(1,2) === randomNumber(1,2)){
                             accept = 1;
                         } else {
@@ -333,7 +337,7 @@ function tick(event){
                         }
                     });
                 });
-                popup.addChild(yesSprite);
+                popup.addChild(selectSprite);
                 
                 var text1 = new createjs.Text("You fell in a hole!", "32px VT323", "black");
                 text1.x = popup.x + 24;
@@ -344,8 +348,72 @@ function tick(event){
                 text2.x = popup.x + 24;
                 text2.y = popup.y + 74;
                 popup.addChild(text2);
-            } else {
-                accept = 1;
+            } else if (action === "enemy"){
+                var enemy;
+                var difficulty;
+                switch (randomNumber(1,6)){
+                    case 1:
+                    case 2:
+                    case 3:
+                        enemy = "bunny";
+                        difficulty = 1;
+                        break;
+                    case 4:
+                    case 5:
+                        enemy = "snake";
+                        difficulty = 2;
+                        break;
+                    case 6:
+                        enemy = "scorpion";
+                        difficulty = 3;
+                        break;
+                }
+                
+                yesSprite.x = popup.x + 123;
+                yesSprite.y = popup.y + 182;
+                yesSprite.addEventListener('mousedown', function(e){
+                    yesSprite.gotoAndPlay("held");
+                    yesSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        yesSprite.gotoAndPlay("exist");
+                        var success = false;
+                        for (var i = 5 - difficulty; i > 0; i--){
+                            if (randomNumber(1,3) === randomNumber(1,3)){
+                                success = true;
+                            }
+                        }
+                        
+                        if (success){
+                            accept = 1;
+                        } else{
+                            accept = 0;
+                        }
+                    });
+                });
+                popup.addChild(yesSprite);
+                
+                noSprite.x = popup.x + 197;
+                noSprite.y = popup.y + 182;
+                noSprite.addEventListener('mousedown', function(e){
+                    noSprite.gotoAndPlay("held");
+                    noSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        noSprite.gotoAndPlay("exist");
+                        createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleCowardice);
+                        accept = 2;
+                    });
+                });
+                popup.addChild(noSprite);
+                
+                var text1 = new createjs.Text("You encountered a " + enemy, "32px VT323", "black");
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("Fight this level " + difficulty + " fight?", "32px VT323", "black");
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
+                popup.addChild(text2);
             }
             stage.addChild(popup);
             
@@ -358,7 +426,7 @@ function tick(event){
             createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleFailure);
             accept = 2;
         } else if (accept === 1){
-            if (action === "pit"){
+            if (action === "pit" || action === "enemy"){
                 popup.getChildAt(2).text = ("You succeeded!");
             }
             createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleSuccess);
@@ -397,6 +465,20 @@ function handleFailure(){
     map[currentCharacter.i][currentCharacter.j].action = "nothing";
     firstTime = true;
     map[currentCharacter.i][currentCharacter.j].actionSprite.visible = false;
+}
+
+function handleCowardice(){
+    popup.removeAllChildren();
+    currentCharacter.i = previousSpace.x;
+    currentCharacter.j = previousSpace.y;
+    currentCharacter.sprite.gotoAndPlay("walk");
+    movementOccuring = true;
+    createjs.Tween.get(currentArrow, {override:false}).to({x:previousSpace.x * 64}, 1000);
+    createjs.Tween.get(currentArrow, {override:false}).to({y:previousSpace.y * 64 - 32}, 1000);
+    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:previousSpace.x * 64}, 1000);
+    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:previousSpace.y * 64}, 1000).call(handleComplete);
+    firstTime = true;
+    actionOccuring = false;
 }
 
 // Whaow
