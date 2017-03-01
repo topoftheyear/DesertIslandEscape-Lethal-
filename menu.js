@@ -12,45 +12,95 @@ var selectButton_img = new Image();
     selectButton_img.src="./Images/SelectButton.png";
 
 //Button Shapes
-var leftButton = {
+var leftButtonData = {
     images:[leftButton_img],
     frames: {width: 64, height:64},
     animations: {
-        exist:[0],
-        select:[1]
+        normal:[0],
+        held:[1]
     }
-};
-var rightButton = {
+}
+var leftSprite = new createjs.Sprite(new createjs.SpriteSheet(leftButtonData));
+leftSprite.addEventListener("mousedown", function(e){
+    leftSprite.gotoAndPlay("held");
+    leftSprite.addEventListener('pressup', function(e){
+        e.target.removeAllEventListeners();
+        leftSprite.gotoAndPlay("normal");
+        });
+    });
+leftSprite.x = 300; leftSprite.y = -300;
+
+var rightButtonData = {
     images:[rightButton_img],
     frames: {width: 64, height:64},
     animations: {
-        exist:[0],
-        select:[1]
+        normal:[0],
+        held:[1]
     }
-};
-var selectButton = {
+}
+var rightSprite = new createjs.Sprite(new createjs.SpriteSheet(rightButtonData));leftSprite.addEventListener("mousedown", function(e){
+    rightSprite.gotoAndPlay("held");
+    rightSprite.addEventListener('pressup', function(e){
+        e.target.removeAllEventListeners();
+        rightSprite.gotoAndPlay("normal");
+        });
+    });
+rightSprite.x = 500; rightSprite.y = -300;
+
+var selectButtonData = {
     images:[selectButton_img],
     frames: {width: 64, height:64},
     animations: {
-        exist:[0],
-        select:[1]
+        normal:[0],
+        held:[1]
     }
-};
-function init(){load();}
-function load(){startMenu();}
+}
+var selectSprite = new createjs.Sprite(new createjs.SpriteSheet(selectButtonData));leftSprite.addEventListener("mousedown", function(e){
+    leftSprite.gotoAndPlay("held");
+    leftSprite.addEventListener('pressup', function(e){
+        e.target.removeAllEventListeners();
+        leftSprite.gotoAndPlay("normal");
+        });
+    });
+selectSprite.x = 400; selectSprite.y = -300;
+
 //Menu container
 var menu = new createjs.Container();
-menu.x = 300;
-menu.y = 300;
+menu.x = 0;
+menu.y = 0;
 
+//Menu boolean
+var inMenu = false;
+
+//Test stage
 var stage = new createjs.Stage("canvas");
+stage.enableMouseOver();
+function load(){
+    init();
+}
+function init(){
+    createjs.Ticker.setFPS(60);
+    createjs.Ticker.addEventListener("tick", tick);
+    startMenu();
+}
+
+function tick(event){
+
+}
+
+function lButton(event){
+
+}
+
+function rButton(event){
+
+}
+
+function sButton(event) {
+
+}
+
 function startMenu(){
-    leftButton.x = 300;
-    leftButton.y = 300;
-    rightButton.x = 500;
-    rightButton.y = 300;
-    selectButton.x = 400;
-    selectButton.y = 300;
-    menu.addChild(leftButton,rightButton,selectButton);
+    menu.addChild(leftSprite,rightSprite,selectSprite);
     stage.addChild(menu);
 }

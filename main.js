@@ -36,6 +36,7 @@ function load(){
 function init(){
     gameWorld = new createjs.Container();
     stage = new createjs.Stage("canvas");
+    stage.enableMouseOver(10);
     gameWorld.x = 0;
     gameWorld.y = 0;
     
@@ -87,6 +88,7 @@ function keyDown(event){
         } else if (key === 13){
             // Enter key for temporary menu bypass
             currentPhase = "gameStart";
+            startMenu();
         }
     }
 }
@@ -123,7 +125,9 @@ function tick(event){
     }
     
     if (currentPhase === "menu"){
-        
+        if(!inMenu){
+            currentPhase = "gameStart";
+        }
     }
     
     if (currentPhase === "gameStart"){
@@ -273,49 +277,6 @@ function generateMap(){
         }
     }
     var volcanoSheet = new createjs.SpriteSheet(volcanoData);
-    /*Characters here:
-     *Greg
-     *Susan
-     *PlaceHolder1
-     *PlaceHolder2 */
-    //Default Character
-    //Greg Character
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Char_Greg.png";
-    var gregData = {
-        x: 0,
-        y: 0,
-        images: [img],
-        frames: {width: 32, height: 32},
-        framerate: 1,
-        animations: {
-            exist: 0,
-            walkUp: [1,2.1],
-            walkLeft: [3,4,5,4],
-            walkRight: [6,7,8,7],
-            walkDown: [9,10,11,10],
-        }
-    }
-    var gregSheet = new createjs.SpriteSheet(gregData);
-
-    //Susan Character
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Char_Susan.png";
-    var susanData = {
-        images: [img],
-        frames: {width: 32, height: 32},
-        framerate: 1,
-        animations: {
-            exist: 0,
-            walkUp: [1,2.1],
-            walkLeft: [3,4,5,4],
-            walkRight: [6,7,8,7],
-            walkDown: [9,10,11,10],
-        }
-    }
-    var susanSheet = new createjs.SpriteSheet(susanData);
     
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
