@@ -205,7 +205,7 @@ function tick(event){
         }
     
         // Next character selector
-        if (movesLeft === 0 && currentPhase === "turn" && !actionOccuring){
+        if (movesLeft < 1 && currentPhase === "turn" && !actionOccuring){
             nextCharacter();
             if (currentCharacter === character1){
                 currentPhase = "turnEnd";
@@ -291,7 +291,55 @@ function tick(event){
                 text3.x = popup.x + 24;
                 text3.y = popup.y + 116;
                 popup.addChild(text3);
-            } else{
+            } else if (action === "tree"){
+                yesSprite.x = popup.x + 160;
+                yesSprite.y = popup.y + 182;
+                yesSprite.addEventListener('mousedown', function(e){
+                    yesSprite.gotoAndPlay("held");
+                    yesSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        yesSprite.gotoAndPlay("exist");
+                        accept = 1;
+                    });
+                });
+                popup.addChild(yesSprite);
+                
+                var text1 = new createjs.Text("You found a tree!", "32px VT323", "black");
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("You collected 10 wood!", "32px VT323", "black");
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
+                popup.addChild(text2);
+            } else if (action === "pit"){
+                yesSprite.x = popup.x + 160;
+                yesSprite.y = popup.y + 182;
+                yesSprite.addEventListener('mousedown', function(e){
+                    yesSprite.gotoAndPlay("held");
+                    yesSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        yesSprite.gotoAndPlay("exist");
+                        if (randomNumber(1,2) === randomNumber(1,2)){
+                            accept = 1;
+                        } else {
+                            accept = 0;
+                        }
+                    });
+                });
+                popup.addChild(yesSprite);
+                
+                var text1 = new createjs.Text("You fell in a hole!", "32px VT323", "black");
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("Check if you can make it out!", "32px VT323", "black");
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
+                popup.addChild(text2);
+            } else {
                 accept = 1;
             }
             stage.addChild(popup);
@@ -301,9 +349,20 @@ function tick(event){
             
         }
         if (accept === 0){
-                
+            var textResult = new createjs.Text("You failed!", "32px VT323", "black");
+            textResult.x = popup.x + 24;
+            textResult.y = popup.y - 462;
+            popup.addChild(textResult);
+            createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleFailure);
+            accept = 2;
         } else if (accept === 1){
-            createjs.Tween.get(popup, {override:false}).to({y:-256}, 1000).call(handleSuccess);
+            if (action === "pit"){
+                var textResult = new createjs.Text("You succeeded!", "32px VT323", "black");
+                textResult.x = popup.x + 24;
+                textResult.y = popup.y - 462;
+                popup.addChild(textResult);
+            }
+            createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleSuccess)
             accept = 2;
         }         
     }
@@ -322,7 +381,18 @@ function tick(event){
 function handleSuccess(){
     if (map[currentCharacter.i][currentCharacter.j].action === "food"){
         foodPile += amount;
+    } else if (map[currentCharacter.i][currentCharacter.j].action === "tree"){
+        woodPile += 10;
     }
+    actionOccuring = false;
+    popup.removeAllChildren();
+    map[currentCharacter.i][currentCharacter.j].action = "nothing";
+    firstTime = true;
+    map[currentCharacter.i][currentCharacter.j].actionSprite.visible = false;
+}
+
+function handleFailure(){
+    movesLeft = 0;
     actionOccuring = false;
     popup.removeAllChildren();
     map[currentCharacter.i][currentCharacter.j].action = "nothing";
