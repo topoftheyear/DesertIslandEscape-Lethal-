@@ -60,7 +60,7 @@ function init(){
 
 // Keyboard input
 function keyDown(event){
-    if (!movementOccuring && currentPhase !== "gameOver" && !actionOccuring){
+    if (!movementOccuring && currentPhase !== "gameOver" && currentPhase !== "dead" && !actionOccuring){
         previousSpace.x = currentCharacter.i;
         previousSpace.y = currentCharacter.j;
         var key = event.keyCode;
@@ -162,6 +162,39 @@ function tick(event){
         
     }
     
+    if (currentPhase === "gameOver"){
+        popup = new createjs.Container();
+        popup.x = 256;
+        popup.y = -256;
+        
+        var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(popup.x, popup.y, 384, 256, 10);
+        var popupBackground = new createjs.Shape(g1);
+        var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(popup.x + 5, popup.y + 5, 374, 246, 30);
+        var popupBackground2 = new createjs.Shape(g2);
+        popup.addChild(popupBackground, popupBackground2);
+        
+        var selectSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png", 128, 64, 0, {exist:[0], held:[1]})), "exist");
+        selectSprite.x = popup.x + 124;
+        selectSprite.y = popup.y + 182;
+        selectSprite.addEventListener('mousedown', function(e){
+            selectSprite.gotoAndPlay("held");
+            selectSprite.addEventListener('pressup', function(e){
+                e.target.removeAllEventListeners();
+                selectSprite.gotoAndPlay("exist");
+                deleteStuff();
+            });
+        });
+        
+        var text1 = new createjs.Text("You lost!", "64px VT323", "red");
+        text1.x = popup.x + 80;
+        text1.y = popup.y + 32;
+        popup.addChild(text1, selectSprite);
+        currentPhase = "dead";
+        
+        stage.addChild(popup);
+        createjs.Tween.get(popup, {override:false}).to({y:stage.height / 2}, 1000);
+    }
+    
     if (!actionOccuring){
         if (currentPhase === "gameStart"){
             generateMap();
@@ -218,10 +251,10 @@ function tick(event){
         }
     
         // Game loss check
-        if (currentPhase !== "menu" && currentPhase !== "gameStart" && daysRemaining === 0 || foodPile < 0){
+        if (currentPhase !== "menu" && currentPhase !== "gameStart" && currentPhase !== "dead" && (daysRemaining === 0 || foodPile < 0)){
             currentPhase = "gameOver";
         }
-    } else {
+    } else if (actionOccuring){
         var action = map[currentCharacter.i][currentCharacter.j].action;
         if (firstTime){
             accept = 2;
@@ -289,6 +322,7 @@ function tick(event){
                 text1.x = popup.x + 24;
                 text1.y = popup.y + 32;
                 popup.addChild(text1);
+
                 
                 var text2 = new createjs.Text("and found some food in it!", "32px VT323", "black");
                 text2.x = popup.x + 24;
@@ -479,6 +513,15 @@ function handleCowardice(){
     createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:previousSpace.y * 64 + currentCharacter.sprite.y % 64}, 1000).call(handleComplete);
     firstTime = true;
     actionOccuring = false;
+}
+
+// Clears the map, popup window, and stage
+function deleteStuff(){
+    gameWorld.removeAllChildren();
+    popup.removeAllChildren();
+    stage.removeAllChildren();
+    sideMenu.removeAllChildren();
+    currentPhase = "menu";
 }
 
 // Whaow
