@@ -2,21 +2,33 @@
 var stage;
 // Container the map and characters go into
 var gameWorld;
+// Popup window
+var popup;
+var amount;
 
-// Current phase tracker, just in case
+// Current phase tracker
 var currentPhase;
 
 // Tracks whether movement is currently occurring
 var movementOccuring = false;
+var actionOccuring = false;
+var firstTime = false;
+
+// Tracks event accept state, 2 for null, 1 for yes, 0 for no
+var accept = 2;
 
 // Map
 var map;
 var mapSize = 17;
 var spawn = {x:0, y:0};
+var previousSpace = {x:0, y:0};
 
 // Side Menu
-var g1;
-var sideMenu;
+var sideMenu = new createjs.Container();
+var foodPile;
+var woodPile;
+var movesLeft = 0;
+var daysRemaining = 0;
 
 // Characters
 var character1 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
@@ -24,9 +36,7 @@ var character2 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var character3 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var character4 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var currentCharacter = character1;
-
-// Game stuff
-var movesLeft = 0;
+var currentArrow;
 
 
 function load(){
@@ -35,8 +45,9 @@ function load(){
 
 function init(){
     gameWorld = new createjs.Container();
+    sideMenu = new createjs.Container();
     stage = new createjs.Stage("canvas");
-    gameWorld.x = 0;
+    gameWorld.x = 256;
     gameWorld.y = 0;
     
     currentPhase = "menu";
@@ -49,42 +60,48 @@ function init(){
 
 // Keyboard input
 function keyDown(event){
-    if (!movementOccuring){
+    if (!movementOccuring && currentPhase !== "gameOver" && !actionOccuring){
+        previousSpace.x = currentCharacter.i;
+        previousSpace.y = currentCharacter.j;
         var key = event.keyCode;
         
         if (key === 65){
             // A
-            if (!movementOccuring){
+            if (map[currentCharacter.i-1][currentCharacter.j].type !== "water" && map[currentCharacter.i-1][currentCharacter.j].rock === false && map[currentCharacter.i-1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walkLeft");
+                createjs.Tween.get(currentArrow, {override:false}).to({x:currentCharacter.sprite.x - 64}, 1000);
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x - 64}, 1000).call(handleComplete);
                 currentCharacter.i = currentCharacter.i - 1;
             }
         } else if (key === 68){
             // D
-            if (!movementOccuring){
+            if (map[currentCharacter.i+1][currentCharacter.j].type !== "water" && map[currentCharacter.i+1][currentCharacter.j].rock === false && map[currentCharacter.i+1][currentCharacter.j].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walk");
+                createjs.Tween.get(currentArrow, {override:false}).to({x:currentCharacter.sprite.x + 64}, 1000);
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:currentCharacter.sprite.x + 64}, 1000).call(handleComplete);
                 currentCharacter.i = currentCharacter.i + 1;
             }
         } else if (key === 87){
             // W
-            if (!movementOccuring){
+            if (map[currentCharacter.i][currentCharacter.j-1].type !== "water" && map[currentCharacter.i][currentCharacter.j-1].rock === false && map[currentCharacter.i][currentCharacter.j-1].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walkLeft");
+                createjs.Tween.get(currentArrow, {override:false}).to({y:currentCharacter.sprite.y - 64 - 32}, 1000);
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y - 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j - 1;
             }
         } else if (key === 83){
             // S
-            if (!movementOccuring){
+            if (map[currentCharacter.i][currentCharacter.j+1].type !== "water" && map[currentCharacter.i][currentCharacter.j+1].rock === false && map[currentCharacter.i][currentCharacter.j+1].volcano === false){
                 movementOccuring = true;
-                movesLeft--;
-                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 500).call(handleComplete);
+                currentCharacter.sprite.gotoAndPlay("walk");
+                createjs.Tween.get(currentArrow, {override:false}).to({y:currentCharacter.sprite.y + 64 - 32}, 1000);
+                createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j + 1;
             }
-        } else if (key === 13){
+        } else if (key === 13 && currentPhase === "menu"){
             // Enter key for temporary menu bypass
             currentPhase = "gameStart";
         }
@@ -93,6 +110,8 @@ function keyDown(event){
 
 function handleComplete(){
     movementOccuring = false;
+    currentCharacter.sprite.gotoAndPlay("exist");
+    movesLeft--;
 }
 
 // Mouse map drag and drop
@@ -100,16 +119,31 @@ function mouseDnD(e){
     gameWorld.posX = e.stageX;
     gameWorld.posY = e.stageY;
     gameWorld.addEventListener('pressmove', function (e) {
-        gameWorld.x = -gameWorld.posX + e.stageX + gameWorld.x; 
-        gameWorld.y = -gameWorld.posY + e.stageY + gameWorld.y; 
+        if (!actionOccuring){
+            gameWorld.x = -gameWorld.posX + e.stageX + gameWorld.x; 
+            gameWorld.y = -gameWorld.posY + e.stageY + gameWorld.y; 
         
-        gameWorld.posX = e.stageX;
-        gameWorld.posY = e.stageY;
+            gameWorld.posX = e.stageX;
+            gameWorld.posY = e.stageY;
+        
+            if (gameWorld.x > 256){
+                gameWorld.x = 256;
+            } else if (gameWorld.x + (mapSize * 64) < stage.width){
+                gameWorld.x = stage.width - (mapSize * 64);
+            }
+            
+            if (gameWorld.y > 0){
+                gameWorld.y = 0;
+            } else if (gameWorld.y + (mapSize * 64) < stage.height){
+                gameWorld.y = stage.height - (mapSize * 64);
+            }
+        }
     });
     gameWorld.addEventListener('pressup', function (e) {
         e.target.removeAllEventListeners();
     });
 }
+
 
 // This method is essentially what should happen every frame regardless of events
 function tick(event){
@@ -119,6 +153,8 @@ function tick(event){
         var cnv = document.getElementById("canvas");
         cnv.height = window.innerHeight - 10;
         cnv.width = window.innerHeight - 10 + 256;
+        stage.height = cnv.height;
+        stage.width = cnv.width;
         
     }
     
@@ -126,34 +162,337 @@ function tick(event){
         
     }
     
-    if (currentPhase === "gameStart"){
-        generateMap();
-        generateCharacters("default", "default", "default", "default");
+    if (!actionOccuring){
+        if (currentPhase === "gameStart"){
+            generateMap();
+            generateCharacters("default", "default", "default", "default");
+            generateSideMenu();
     
-        // Side menu
-        g1 = new createjs.Graphics().beginFill("#d3d3d3").drawRect(0, 0, 256, window.innerHeight);
-        sideMenu = new createjs.Shape(g1);
+            // Map movement by mouse added
+            gameWorld.addEventListener('mousedown', mouseDnD);
     
-        // Map movement by mouse added
-        gameWorld.addEventListener('mousedown', mouseDnD);
+            // Current player marker
+            currentArrow = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/CurrentArrow.png", 32, 32, 8, {exist:[0,3]})), "exist");
+            gameWorld.addChild(currentArrow);
+        
+            stage.addChild(gameWorld);
+            stage.addChild(sideMenu);
+        
+            // Game Initialization
+            currentPhase = "turnStart";
+            foodPile = 16;
+            woodPile = 0;
+            daysRemaining = 7;
+            currentCharacter = character1;
+        
     
-        stage.addChild(gameWorld);
-        stage.addChild(sideMenu);
+            currentPhase = "turnStart";
+        }
     
-        currentPhase = "turnStart";
+        // Sets up the turn
+        if (currentPhase === "turnStart"){
+            currentPhase = "turn";
+            movesLeft = currentCharacter.movement;
+            currentArrow.x = currentCharacter.sprite.x;
+            currentArrow.y = currentCharacter.sprite.y - 32;
+        } else if (currentPhase === "turnEnd"){
+            foodPile = foodPile - character1.food - character2.food - character3.food - character4.food;
+            daysRemaining--;
+            currentPhase = "turnStart";
+        }
+    
+        // Checks if the space the current character is on has an action
+        if (currentPhase === "turn" && map[currentCharacter.i][currentCharacter.j].action !== "nothing" && map[currentCharacter.i][currentCharacter.j].action !== "spawn" && !movementOccuring){
+            actionOccuring = true;
+            firstTime = true;
+        }
+    
+        // Next character selector
+        if (movesLeft < 1 && currentPhase === "turn" && !actionOccuring && !movementOccuring){
+            nextCharacter();
+            if (currentCharacter === character1){
+                currentPhase = "turnEnd";
+            } else{
+                currentPhase = "turnStart";
+            }
+        }
+    
+        // Game loss check
+        if (currentPhase !== "menu" && currentPhase !== "gameStart" && daysRemaining === 0 || foodPile < 0){
+            currentPhase = "gameOver";
+        }
+    } else {
+        var action = map[currentCharacter.i][currentCharacter.j].action;
+        if (firstTime){
+            accept = 2;
+            var selectSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png", 128, 64, 0, {exist:[0], held:[1]})), "exist");
+            var yesSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/YesButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
+            var noSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/NoButton.png", 64, 64, 0, {exist:[0], held:[1]})), "exist");
+            
+            popup = new createjs.Container();
+            popup.x = 256;
+            popup.y = -256;
+    
+            var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(popup.x, popup.y, 384, 256, 10);
+            var popupBackground = new createjs.Shape(g1);
+            var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(popup.x + 5, popup.y + 5, 374, 246, 30);
+            var popupBackground2 = new createjs.Shape(g2);
+            popup.addChild(popupBackground, popupBackground2);
+            
+            var textResult = new createjs.Text("", "32px VT323", "black");
+            textResult.x = popup.x + 24;
+            textResult.y = popup.y + 116;
+            popup.addChild(textResult);
+            
+            if (action === "food"){
+                var fruit = "";
+                switch(randomNumber(1,8)){
+                    case 1:
+                        fruit = "bananas";
+                        break;
+                    case 2:
+                        fruit = "mangoes";
+                        break;
+                    case 3:
+                        fruit = "pineapples";
+                        break;
+                    case 4:
+                        fruit = "coconuts";
+                        break;
+                    case 5:
+                        fruit = "durians";
+                        break;
+                    case 6:
+                        fruit = "kiwis";
+                        break;
+                    case 7:
+                        fruit = "tangerines";
+                        break;
+                    case 8:
+                        fruit = "guavas";
+                        break;
+                }
+                
+                selectSprite.x = popup.x + 124;
+                selectSprite.y = popup.y + 182;
+                selectSprite.addEventListener('mousedown', function(e){
+                    selectSprite.gotoAndPlay("held");
+                    selectSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        selectSprite.gotoAndPlay("exist");
+                        accept = 1;
+                    });
+                });
+                popup.addChild(selectSprite);
+                
+                var text1 = new createjs.Text("You wandered across a bush", "32px VT323", "black");
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("and found some food in it!", "32px VT323", "black");
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
+                popup.addChild(text2);
+                
+                amount = randomNumber(3,6);
+                var text3 = new createjs.Text("You got " + amount + " " + fruit + "!", "32px VT323", "black");
+                text3.x = popup.x + 24;
+                text3.y = popup.y + 116;
+                popup.addChild(text3);
+            } else if (action === "tree"){
+                selectSprite.x = popup.x + 124;
+                selectSprite.y = popup.y + 182;
+                selectSprite.addEventListener('mousedown', function(e){
+                    selectSprite.gotoAndPlay("held");
+                    selectSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        selectSprite.gotoAndPlay("exist");
+                        accept = 1;
+                    });
+                });
+                popup.addChild(selectSprite);
+                
+                var text1 = new createjs.Text("You found a tree!", "32px VT323", "black");
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("You collected 10 wood!", "32px VT323", "black");
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
+                popup.addChild(text2);
+            } else if (action === "pit"){
+                selectSprite.x = popup.x + 124;
+                selectSprite.y = popup.y + 182;
+                selectSprite.addEventListener('mousedown', function(e){
+                    selectSprite.gotoAndPlay("held");
+                    selectSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        selectSprite.gotoAndPlay("exist");
+                        if (randomNumber(1,2) === randomNumber(1,2)){
+                            accept = 1;
+                        } else {
+                            accept = 0;
+                        }
+                    });
+                });
+                popup.addChild(selectSprite);
+                
+                var text1 = new createjs.Text("You fell in a hole!", "32px VT323", "black");
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("Can you escape?", "32px VT323", "black");
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
+                popup.addChild(text2);
+            } else if (action === "enemy"){
+                var enemy;
+                var difficulty;
+                switch (randomNumber(1,6)){
+                    case 1:
+                    case 2:
+                    case 3:
+                        enemy = "bunny";
+                        difficulty = 1;
+                        break;
+                    case 4:
+                    case 5:
+                        enemy = "snake";
+                        difficulty = 2;
+                        break;
+                    case 6:
+                        enemy = "scorpion";
+                        difficulty = 3;
+                        break;
+                }
+                
+                yesSprite.x = popup.x + 123;
+                yesSprite.y = popup.y + 182;
+                yesSprite.addEventListener('mousedown', function(e){
+                    yesSprite.gotoAndPlay("held");
+                    yesSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        yesSprite.gotoAndPlay("exist");
+                        var success = false;
+                        for (var i = 5 - difficulty; i > 0; i--){
+                            if (randomNumber(1,3) === randomNumber(1,3)){
+                                success = true;
+                            }
+                        }
+                        
+                        if (success){
+                            accept = 1;
+                        } else{
+                            accept = 0;
+                        }
+                    });
+                });
+                popup.addChild(yesSprite);
+                
+                noSprite.x = popup.x + 197;
+                noSprite.y = popup.y + 182;
+                noSprite.addEventListener('mousedown', function(e){
+                    noSprite.gotoAndPlay("held");
+                    noSprite.addEventListener('pressup', function(e){
+                        e.target.removeAllEventListeners();
+                        noSprite.gotoAndPlay("exist");
+                        createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleCowardice);
+                        accept = 2;
+                    });
+                });
+                popup.addChild(noSprite);
+                
+                var text1 = new createjs.Text("You encountered a " + enemy, "32px VT323", "black");
+                text1.x = popup.x + 24;
+                text1.y = popup.y + 32;
+                popup.addChild(text1);
+                
+                var text2 = new createjs.Text("Fight this level " + difficulty + " fight?", "32px VT323", "black");
+                text2.x = popup.x + 24;
+                text2.y = popup.y + 74;
+                popup.addChild(text2);
+            }
+            stage.addChild(popup);
+            
+            createjs.Tween.get(popup, {override:false}).to({y:stage.height / 2}, 1000);
+            firstTime = false;
+            
+        }
+        if (accept === 0){
+            popup.getChildAt(2).text = ("You failed!");
+            createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleFailure);
+            accept = 2;
+        } else if (accept === 1){
+            if (action === "pit" || action === "enemy"){
+                popup.getChildAt(2).text = ("You succeeded!");
+            }
+            createjs.Tween.get(popup, {override:false}).wait(500).to({y:-256}, 1000).call(handleSuccess);
+            accept = 2;
+        }         
     }
     
-    if (currentPhase === "turnStart"){
-        currentPhase = "turn";
-        movesLeft = currentCharacter.movement;
-    }
-    
-    if (movesLeft === 0){
-        nextCharacter();
-        currentPhase = "turnStart";
+    // Game stuff update
+    if (currentPhase !== "menu" && currentPhase !== "gameStart"){
+        sideMenu.getChildAt(2).text = (":" + foodPile);
+        sideMenu.getChildAt(4).text = (":" + woodPile);
+        sideMenu.getChildAt(6).text = (":" + daysRemaining);
+        sideMenu.getChildAt(8).text = (":" + movesLeft);
     }
     
     stage.update(event);
+}
+
+function handleSuccess(){
+    if (map[currentCharacter.i][currentCharacter.j].action === "food"){
+        foodPile += amount;
+    } else if (map[currentCharacter.i][currentCharacter.j].action === "tree"){
+        woodPile += 10;
+    }
+    actionOccuring = false;
+    popup.removeAllChildren();
+    map[currentCharacter.i][currentCharacter.j].action = "nothing";
+    firstTime = true;
+    map[currentCharacter.i][currentCharacter.j].actionSprite.visible = false;
+}
+
+function handleFailure(){
+    movesLeft = 0;
+    actionOccuring = false;
+    popup.removeAllChildren();
+    map[currentCharacter.i][currentCharacter.j].action = "nothing";
+    firstTime = true;
+    map[currentCharacter.i][currentCharacter.j].actionSprite.visible = false;
+}
+
+function handleCowardice(){
+    popup.removeAllChildren();
+    currentCharacter.i = previousSpace.x;
+    currentCharacter.j = previousSpace.y;
+    currentCharacter.sprite.gotoAndPlay("walk");
+    movementOccuring = true;
+    createjs.Tween.get(currentArrow, {override:false}).to({x:previousSpace.x * 64 + currentCharacter.sprite.x % 64}, 1000);
+    createjs.Tween.get(currentArrow, {override:false}).to({y:previousSpace.y * 64 - 32 + currentCharacter.sprite.y % 64}, 1000);
+    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({x:previousSpace.x * 64 + currentCharacter.sprite.x % 64}, 1000);
+    createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:previousSpace.y * 64 + currentCharacter.sprite.y % 64}, 1000).call(handleComplete);
+    firstTime = true;
+    actionOccuring = false;
+}
+
+// Whaow
+function generateSpriteSheet(source, w, h, fps, anime){
+    var img = new Image();
+    img.crossOrigin="Anonymous";
+    img.src = source;
+    var data = {
+        images: [img],
+        frames: {width:w, height:h},
+        framerate: fps,
+        animations: anime
+    }
+    return data;
 }
 
 // Generates the map, complete with events and stuff
@@ -163,116 +502,6 @@ function generateMap(){
     for (var i = 0; i < map.length; i++){
         map[i] = new Array(mapSize);
     }
-    
-    // Water tile
-    var img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Water.png";
-    var waterData = {
-        images: [img],
-        frames: {width:64, height:64},
-        framerate: 10,
-        animations: {
-            exist:[0,15]
-        }
-    };
-    var waterSheet = new createjs.SpriteSheet(waterData);
-    
-    // Grass tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Grass.png";
-    var grassData = {
-        images: [img],
-        frames: {width:64, height:64},
-        framerate: 4,
-        animations: {
-            exist:[0,3]
-        }
-    };
-    var grassSheet = new createjs.SpriteSheet(grassData);
-    
-    // Sand tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Sand.png";
-    var sandData = {
-        images: [img],
-        frames: {width:64, height:64},
-        animations: {
-            exist:[0]
-        }
-    };
-    var sandSheet = new createjs.SpriteSheet(sandData);
-    
-    // Tree tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Tree.png";
-    var treeData = {
-        images: [img],
-        frames: {width: 64, height:64},
-        framerate: 4,
-        animations: {
-            exist:[0,7]
-        }
-    };
-    var treeSheet = new createjs.SpriteSheet(treeData);
-    
-    // Rock tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Rock.png";
-    var rockData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        animations: {
-            exist:[0]
-        }
-    }
-    var rockSheet = new createjs.SpriteSheet(rockData);
-    
-    // Bush tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Bush.png";
-    var bushData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        framerate: 4,
-        animations: {
-            exist:[0,3]
-        }
-    }
-    var bushSheet = new createjs.SpriteSheet(bushData);
-    
-    // Volcano tile
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Volcano.png";
-    var volcanoData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        framerate: 10,
-        animations: {
-            exist:[0,1]
-        }
-    }
-    var volcanoSheet = new createjs.SpriteSheet(volcanoData);
-    
-    // Action item
-    img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = "./Images/Action.png";
-    var actionData = {
-        images: [img],
-        frames: {width: 64, height: 64},
-        framerate: 12,
-        animations: {
-            exist:[0,13]
-        }
-    }
-    var actionSheet = new createjs.SpriteSheet(actionData);
     
     // Initial map placement of either grass or water types
     for (var i = 0; i < map.length; i++){
@@ -306,7 +535,7 @@ function generateMap(){
             }
             
             // Add the selected block to the map
-            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false, fog:false, volcano:false};
+            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false, fog:false, volcano:false, actionSprite:null};
         }
     }
     
@@ -442,7 +671,13 @@ function generateMap(){
         for (var j = 0; j < map.length; j++){
             if (map[i][j].type !== "water" || map[i][j].rock === true){
                 if (map[i][j].bush === true){
-                    map[i][j].action = "something";
+                    if (randomNumber(1,3) === randomNumber(1,3)){
+                        map[i][j].action = "enemy";
+                    } else if (randomNumber(1,5) === randomNumber(1,5)){
+                        map[i][j].action = "pit";
+                    } else {
+                        map[i][j].action = "food";
+                    }
                 } else if (map[i][j].type === "tree"){
                     map[i][j].action = "tree";
                 }
@@ -470,6 +705,20 @@ function generateMap(){
     }
     
     // Draw the map
+    drawMap();
+}
+
+// Draws the map
+function drawMap(){
+    var waterSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Water.png", 64, 64, 10, {exist:[0,15]}));
+    var grassSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Grass.png", 64, 64, 4, {exist:[0,3]}));
+    var sandSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Sand.png", 64, 64, 0, {exist:[0]}));
+    var treeSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Tree.png", 64, 64, 4, {exist:[0,7]}));
+    var rockSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Rock.png", 64, 64, 15, {exist:[0], destroy:[1,10]}));
+    var bushSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Bush.png", 64, 64, 4, {exist:[0,3]}));
+    var volcanoSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Volcano.png", 64, 64, 10, {exist:[0,1]}));
+    var actionSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Action.png", 64, 64, 12, {exist:[0,13]}));
+    
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
             var block;
@@ -507,6 +756,7 @@ function generateMap(){
                 block = new createjs.Sprite(actionSheet, "exist");
                 block.x = i * 64;
                 block.y = j * 64;
+                map[i][j].actionSprite = block;
                 gameWorld.addChild(block);
             }
         }
@@ -520,71 +770,130 @@ function generateCharacters(type1, type2, type3, type4){
     img = new Image();
     img.crossOrigin="Anonymous";
     img.src = "./Images/DefaultCharacter.png";
-    var defaultCharacterData = {
-        images: [img],
-        frames: {width: 32, height: 32},
-        framerate: 5,
-        animations: {
-            exist:[0],
-            walk:[1,4],
-            walkLeft:[5,8],
-            punch:[9,10]
+    var defaultCharacterSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/DefaultCharacter.png", 32, 32, 5, {exist:[0], walk:[1,4], walkLeft:[5,8], punch:[9,10]}));
+    
+    for (var i = 1; i < 5; i++){
+        var type;
+        switch(i){
+            case 1:
+                currentCharacter = character1;
+                type = type1;
+                break;
+            case 2:
+                currentCharacter = character2;
+                type = type2;
+                break;
+            case 3:
+                currentCharacter = character3;
+                type = type3;
+                break;
+            case 4:
+                currentCharacter = character4;
+                type = type4;
+                break;
+        }
+        
+        if (type === "default"){
+            currentCharacter.class = "default";
+            currentCharacter.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
+            currentCharacter.food = 2;
+            currentCharacter.movement = 4;
+            currentCharacter.sight = 1;
         }
     }
-    var defaultCharacterSheet = new createjs.SpriteSheet(defaultCharacterData);
-    
-    if (type1 === 'default'){
-        character1.class = "default";
-        character1.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character1.food = 2;
-        character1.movement = 4;
-        character1.sight = 1;
-    }
-    if (type2 === 'default'){
-        character2.class = "default";
-        character2.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character2.food = 2;
-        character2.movement = 4;
-        character2.sight = 1;
-    }
-    if (type3 === 'default'){
-        character3.class = "default";
-        character3.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character3.food = 2;
-        character3.movement = 4;
-        character3.sight = 1;
-    }
-    if (type4 === 'default'){
-        character4.class = "default";
-        character4.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
-        character4.food = 2;
-        character4.movement = 4;
-        character4.sight = 1;
-    }
+
     // Put them in the map[][] at spawn, and draw them in staggered per corner
     character1.i = spawn.x;
     character1.j = spawn.y;
     character1.sprite.x = spawn.x * 64;
     character1.sprite.y = spawn.y * 64;
-    gameWorld.addChild(character1.sprite);
     
     character2.i = spawn.x;
     character2.j = spawn.y;
     character2.sprite.x = spawn.x * 64 + 32;
     character2.sprite.y = spawn.y * 64;
-    gameWorld.addChild(character2.sprite);
     
     character3.i = spawn.x;
     character3.j = spawn.y;
     character3.sprite.x = spawn.x * 64;
     character3.sprite.y = spawn.y * 64 + 32;
-    gameWorld.addChild(character3.sprite);
     
     character4.i = spawn.x;
     character4.j = spawn.y;
     character4.sprite.x = spawn.x * 64 + 32;
     character4.sprite.y = spawn.y * 64 + 32;
+    
+    drawCharacters();
+}
+
+// Draws the characters
+function drawCharacters(){
+    gameWorld.addChild(character1.sprite);
+    gameWorld.addChild(character2.sprite);
+    gameWorld.addChild(character3.sprite);
     gameWorld.addChild(character4.sprite);
+}
+
+// Generate the side menu
+function generateSideMenu(){
+    // Side menu
+    var g1 = new createjs.Graphics().beginFill("gray").drawRect(0, 0, 256, window.innerHeight);
+    var sideMenuBackground = new createjs.Shape(g1);
+    sideMenu.addChild(sideMenuBackground);
+    var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(5, 5, 246, window.innerHeight - 20, 30);
+    var sideMenuBackground2 = new createjs.Shape(g2);
+    sideMenu.addChild(sideMenuBackground2);
+    
+    // 1
+    var foodText = new createjs.Text(":" + foodPile, "64px VT323", "black");
+    foodText.x = 128;
+    foodText.y = 128;
+    sideMenu.addChild(foodText);
+    
+    // 2
+    var foodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Apple.png", 64, 64, 0, {exist:[0]}));
+    var foodSprite = new createjs.Sprite(foodSheet, "exist");
+    foodSprite.x = 64;
+    foodSprite.y = 128;
+    sideMenu.addChild(foodSprite);
+    
+    // 3
+    var woodText = new createjs.Text(":" + woodPile, "64px VT323", "black");
+    woodText.x = 128;
+    woodText.y = 192;
+    sideMenu.addChild(woodText);
+    
+    // 4
+    var woodSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Log.png", 64, 64, 0, {exist:[0]}));
+    var woodSprite = new createjs.Sprite(woodSheet, "exist");
+    woodSprite.x = 64;
+    woodSprite.y = 192;
+    sideMenu.addChild(woodSprite);
+    
+    // 5
+    var daysText = new createjs.Text(":" + daysRemaining, "64px VT323", "black");
+    daysText.x = 128;
+    daysText.y = 256;
+    sideMenu.addChild(daysText);
+    
+    // 6
+    var daysText2 = new createjs.Text("Days Left", "32px VT323", "black");
+    daysText2.x = 10;
+    daysText2.y = 272;
+    sideMenu.addChild(daysText2);
+    
+    // 7
+    var movesText = new createjs.Text(":" + movesLeft, "64px VT323", "black");
+    movesText.x = 128;
+    movesText.y = 320;
+    sideMenu.addChild(movesText);
+    
+    // 8
+    var movesText2 = new createjs.Text("Moves", "32px VT323", "black");
+    movesText2.x = 64;
+    movesText2.y = 336;
+    sideMenu.addChild(movesText2);
+    
 }
 
 // Lets the next character take their turn
