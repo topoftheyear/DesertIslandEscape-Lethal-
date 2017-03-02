@@ -195,6 +195,39 @@ function tick(event){
         createjs.Tween.get(popup, {override:false}).to({y:stage.height / 2}, 1000);
     }
     
+    if (currentPhase === "win"){
+        popup = new createjs.Container();
+        popup.x = 256;
+        popup.y = -256;
+        
+        var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(popup.x, popup.y, 384, 256, 10);
+        var popupBackground = new createjs.Shape(g1);
+        var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(popup.x + 5, popup.y + 5, 374, 246, 30);
+        var popupBackground2 = new createjs.Shape(g2);
+        popup.addChild(popupBackground, popupBackground2);
+        
+        var selectSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png", 128, 64, 0, {exist:[0], held:[1]})), "exist");
+        selectSprite.x = popup.x + 124;
+        selectSprite.y = popup.y + 182;
+        selectSprite.addEventListener('mousedown', function(e){
+            selectSprite.gotoAndPlay("held");
+            selectSprite.addEventListener('pressup', function(e){
+                e.target.removeAllEventListeners();
+                selectSprite.gotoAndPlay("exist");
+                deleteStuff();
+            });
+        });
+        
+        var text1 = new createjs.Text("You win!", "64px VT323", "green");
+        text1.x = popup.x + 92;
+        text1.y = popup.y + 32;
+        popup.addChild(text1, selectSprite);
+        currentPhase = "dead";
+        
+        stage.addChild(popup);
+        createjs.Tween.get(popup, {override:false}).to({y:stage.height / 2}, 1000);
+    }
+    
     if (!actionOccuring){
         if (currentPhase === "gameStart"){
             generateMap();
@@ -254,6 +287,7 @@ function tick(event){
         if (currentPhase !== "menu" && currentPhase !== "gameStart" && currentPhase !== "dead" && (daysRemaining === 0 || foodPile < 0)){
             currentPhase = "gameOver";
         }
+        
     } else if (actionOccuring){
         var action = map[currentCharacter.i][currentCharacter.j].action;
         if (firstTime){
@@ -329,7 +363,7 @@ function tick(event){
                 text2.y = popup.y + 74;
                 popup.addChild(text2);
                 
-                amount = randomNumber(3,6);
+                amount = randomNumber(1,4);
                 var text3 = new createjs.Text("You got " + amount + " " + fruit + "!", "32px VT323", "black");
                 text3.x = popup.x + 24;
                 text3.y = popup.y + 116;
@@ -412,7 +446,7 @@ function tick(event){
                         yesSprite.gotoAndPlay("exist");
                         var success = false;
                         for (var i = 5 - difficulty; i > 0; i--){
-                            if (randomNumber(1,3) === randomNumber(1,3)){
+                            if (randomNumber(1,4) === randomNumber(1,4)){
                                 success = true;
                             }
                         }
@@ -484,6 +518,19 @@ function handleSuccess(){
         foodPile += amount;
     } else if (map[currentCharacter.i][currentCharacter.j].action === "tree"){
         woodPile += 10;
+        if (woodPile > 25){
+            escapeButton = sideMenu.getChildAt(10);
+            escapeButton.gotoAndPlay("exist");
+            escapeButton.addEventListener('mousedown', function(e){
+                escapeButton.gotoAndPlay("held");
+                escapeButton.addEventListener('pressup', function(e){
+                    e.target.removeAllEventListeners();
+                    escapeButton.gotoAndPlay("exist");
+                    currentPhase = "win";
+                    woodPile -= 25;
+                });
+            });
+        }
     }
     actionOccuring = false;
     popup.removeAllChildren();
@@ -716,7 +763,7 @@ function generateMap(){
                 if (map[i][j].bush === true){
                     if (randomNumber(1,3) === randomNumber(1,3)){
                         map[i][j].action = "enemy";
-                    } else if (randomNumber(1,5) === randomNumber(1,5)){
+                    } else if (randomNumber(1,4) === randomNumber(1,4)){
                         map[i][j].action = "pit";
                     } else {
                         map[i][j].action = "food";
@@ -937,6 +984,11 @@ function generateSideMenu(){
     movesText2.y = 336;
     sideMenu.addChild(movesText2);
     
+    // 9
+    var escapeSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/EscapeButton.png", 124, 64, 0, {exist:[0], held:[1], disabled:[2]})), "disabled");
+    escapeSprite.x = 64;
+    escapeSprite.y = 500;
+    sideMenu.addChild(escapeSprite);
 }
 
 // Lets the next character take their turn
