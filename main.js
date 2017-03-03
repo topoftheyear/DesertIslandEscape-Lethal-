@@ -144,7 +144,6 @@ function mouseDnD(e){
     });
 }
 
-
 // This method is essentially what should happen every frame regardless of events
 function tick(event){
     // Window resizing
@@ -255,12 +254,37 @@ function tick(event){
             currentPhase = "turnStart";
         }
     
+        // Fog of War
+        if (currentPhase === "turn"){
+            i = currentCharacter.i;
+            j = currentCharacter.j;
+            
+            map[i][j].fogSprite.visible = false;
+            map[i+1][j].fogSprite.visible = false;
+            map[i-1][j].fogSprite.visible = false;
+            map[i][j+1].fogSprite.visible = false;
+            map[i][j-1].fogSprite.visible = false;
+            
+            if (currentCharacter.visibility === 2){
+                map[i+2][j].fogSprite.visible = false;
+                map[i-2][j].fogSprite.visible = false;
+                map[i][j+2].fogSprite.visible = false;
+                map[i][j+2].fogSprite.visible = false;
+                
+                map[i+1][j+1].fogSprite.visible = false;
+                map[i+1][j-1].fogSprite.visible = false;
+                map[i-1][j+1].fogSprite.visible = false;
+                map[i-1][j+1].fogSprite.visible = false;
+            }
+        }
+        
         // Sets up the turn
         if (currentPhase === "turnStart"){
             currentPhase = "turn";
             movesLeft = currentCharacter.movement;
             currentArrow.x = currentCharacter.sprite.x;
             currentArrow.y = currentCharacter.sprite.y - 32;
+            
         } else if (currentPhase === "turnEnd"){
             foodPile = foodPile - character1.food - character2.food - character3.food - character4.food;
             daysRemaining--;
@@ -625,7 +649,7 @@ function generateMap(){
             }
             
             // Add the selected block to the map
-            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false, fog:false, volcano:false, actionSprite:null};
+            map[i][j] = {type:type, action:"nothing", rock:false, bush:false, spawn:false, fog:false, volcano:false, actionSprite:null, fog:true, fogSprite:null};
         }
     }
     
@@ -808,6 +832,7 @@ function drawMap(){
     var bushSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Bush.png", 64, 64, 4, {exist:[0,3]}));
     var volcanoSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Volcano.png", 64, 64, 10, {exist:[0,1]}));
     var actionSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Action.png", 64, 64, 12, {exist:[0,13]}));
+    var fogSheet = new createjs.SpriteSheet(generateSpriteSheet("./Images/Fog.png", 64, 64, 8, {exist:[0,31]}));
     
     for (var i = 0; i < map.length; i++){
         for (var j = 0; j < map.length; j++){
@@ -849,6 +874,12 @@ function drawMap(){
                 map[i][j].actionSprite = block;
                 gameWorld.addChild(block);
             }
+            
+            block = new createjs.Sprite(fogSheet, "exist");
+            block.x = i * 64;
+            block.y = j * 64;
+            map[i][j].fogSprite = block;
+            gameWorld.addChild(block);
         }
     }
 }
