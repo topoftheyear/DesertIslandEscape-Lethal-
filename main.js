@@ -875,11 +875,20 @@ function drawMap(){
                 gameWorld.addChild(block);
             }
             
-            block = new createjs.Sprite(fogSheet, "exist");
-            block.x = i * 64;
-            block.y = j * 64;
-            map[i][j].fogSprite = block;
-            gameWorld.addChild(block);
+            if (i !== 0 && j !== 0 && i !== mapSize - 1 && j !== mapSize - 1){
+                block = new createjs.Sprite(fogSheet, "exist");
+                block.x = i * 64;
+                block.y = j * 64;
+                map[i][j].fogSprite = block;
+                gameWorld.addChild(block);
+            } else{
+                block = new createjs.Sprite(fogSheet, "exist");
+                block.x = i * 64;
+                block.y = j * 64;
+                map[i][j].fogSprite = block;
+                map[i][j].fogSprite.visible = false;
+                gameWorld.addChild(block);
+            }
         }
     }
 }
