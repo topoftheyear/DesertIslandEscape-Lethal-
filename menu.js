@@ -12,15 +12,17 @@ var selectButton_img = new Image();
     selectButton_img.src="./Images/SelectButton.png";
 
 //Button Shapes
+
+
 var leftButtonData = {
     images:[leftButton_img],
     frames: {width: 64, height:64},
     animations: {
-        normal:[0],
-        held:[1]
+        normal:0,
+        held:1
     }
 }
-var leftSprite = new createjs.Sprite(new createjs.SpriteSheet(leftButtonData));
+var leftSprite = new createjs.Sprite(new createjs.SpriteSheet(leftButtonData), "normal");
 leftSprite.addEventListener("mousedown", function(e){
     leftSprite.gotoAndPlay("held");
     leftSprite.addEventListener('pressup', function(e){
@@ -34,11 +36,12 @@ var rightButtonData = {
     images:[rightButton_img],
     frames: {width: 64, height:64},
     animations: {
-        normal:[0],
-        held:[1]
+        normal:0,
+        held:1
     }
 }
-var rightSprite = new createjs.Sprite(new createjs.SpriteSheet(rightButtonData));leftSprite.addEventListener("mousedown", function(e){
+var rightSprite = new createjs.Sprite(new createjs.SpriteSheet(rightButtonData),"normal");
+rightSprite.addEventListener("mousedown", function(e){
     rightSprite.gotoAndPlay("held");
     rightSprite.addEventListener('pressup', function(e){
         e.target.removeAllEventListeners();
@@ -55,11 +58,12 @@ var selectButtonData = {
         held:[1]
     }
 }
-var selectSprite = new createjs.Sprite(new createjs.SpriteSheet(selectButtonData));leftSprite.addEventListener("mousedown", function(e){
-    leftSprite.gotoAndPlay("held");
-    leftSprite.addEventListener('pressup', function(e){
+var selectSprite = new createjs.Sprite(new createjs.SpriteSheet(selectButtonData),"normal");
+selectSprite.addEventListener("mousedown", function(e){
+    selectSprite.gotoAndPlay("held");
+    selectSprite.addEventListener('pressup', function(e){
         e.target.removeAllEventListeners();
-        leftSprite.gotoAndPlay("normal");
+        selectSprite.gotoAndPlay("normal");
         });
     });
 selectSprite.x = 400; selectSprite.y = -300;
@@ -74,7 +78,7 @@ var inMenu = false;
 
 //Test stage
 var stage = new createjs.Stage("canvas");
-stage.enableMouseOver();
+stage.enableMouseOver(10);
 function load(){
     init();
 }
