@@ -38,6 +38,15 @@ var character4 = {sprite:null, food:0, movement:0, sight:0, i:0, j:0, class:""};
 var currentCharacter = character1;
 var currentArrow;
 
+//Buttons
+var leftButton;
+var rightButton;
+var selectButton;
+
+//Menus
+var startMenu;
+var inStart = false;
+var cMenu;
 
 function load(){
     init();
@@ -158,7 +167,10 @@ function tick(event){
     }
     
     if (currentPhase === "menu"){
-        
+        if(!inStart){
+            inStart=true;
+            startMenu();
+        }
     }
     
     if (currentPhase === "gameOver"){
@@ -1031,6 +1043,88 @@ function generateSideMenu(){
     sideMenu.addChild(escapeSprite);
 }
 
+//Start Menu creation, interaction, and deletion
+function startMenu(){
+    //Create buttons
+    leftButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+    rightButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));    
+    selectButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png",64.64,0,{normal:0, held:1}),"normal"));    
+    
+    //Create start menu Container and background
+    startMenu = new createjs.Container();
+    startMenu.x = 256;
+    startMenu.y = 256;
+    var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(startMenu.x, startMenu.y, 384, 256, 10);
+    var startMenuBackground = new createjs.Shape(g1);
+    var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(startMenu.x + 5, startMenu.y + 5, 374, 246, 30);
+    var startMenuBackground2 = new createjs.Shape(g2);
+    startMenu.addChild(startMenuBackground, startMenuBackground2);
+
+    //Text for map size added to Menu
+    var textMapSize = new createjs.Text("Map Size:", "32px VT323", "black");
+    textMapSize.x = startMenu.x + 24;
+    textMapSize.y = startMenu.y + 15;
+    startMenu.addChild(textMapSize);
+    //Varying size text and array of the sizes
+    var textChosenSize = new createjs.Text("Normal (17*17)", "32px VT323", "black");
+    textChosenSize.x = startMenu.x + 24;
+    textChosenSize.y = textMapSize.y + 56;
+    startMenu.addChild(textChosenSize);
+
+    leftButton.x = startMenu.x + 24;
+    leftButton.y = textChosenSize.y + 32;
+    selectButton.x = leftButton.x + 75;
+    selectButton.y = leftButton.y + 77;
+    rightButton.x = selectButton.x + 179;
+    rightButton.y = selectButton.y;
+
+    leftButton.addEventListener('mousedown', function(e){
+    leftButton.gotoAndPlay("normal");
+    leftButton.addEventListener('pressup', function(e){
+        if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
+            textChosenSize.text = "Large (21*21)";
+        } else if (textChosenSize.text.charAt(0).toLowerCase()==='l'){
+            textChosenSize.text = "Normal (17*17)";
+        } else if (textChosenSize.text.charAt(0).toLowerCase()==='n'){
+            textChosenSize.text = "Small (13*13)";
+        }
+        stage.update();
+        leftButton.gotoAndPlay("exist");
+        });
+    });
+
+    rightButton.addEventListener('mousedown', function(e){
+    rightButton.gotoAndPlay("normal");
+    rightButton.addEventListener('pressup', function(e){
+        if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
+            textChosenSize.text = "Normal (17*17)";
+        } else if (textChosenSize.text.charAt(0).toLowerCase()==='n'){
+            textChosenSize.text = "Large (21*21)";
+        } else if (textChosenSize.text.charAt(0).toLowerCase()==='l'){
+            textChosenSize.text = "Small (13*13)";
+        }
+        
+        rightButton.gotoAndPlay("exist");
+        });
+    });
+
+    selectButton.addEventListener('mousedown', function(e){
+    selectButton.gotoAndPlay("normal");
+    selectButton.addEventListener('pressup', function(e){
+        mapSize = 13 + (sMenuShown * 4);
+        selectButton.gotoAndPlay("exist");
+        leftButton.removeAllEventListeners();
+        selectButton.removeAllEventListeners();
+        rightButton.removeAllEventListeners();
+        charMenu();
+        });
+    });
+    startMenu.addChild(leftButton,selectButton,rightButton);
+    stage.addChild(startMenu);
+}
+function charMenu(){
+
+}
 // Lets the next character take their turn
 function nextCharacter(){
     if (currentCharacter === character1){

@@ -3,45 +3,10 @@ var leftButton;
 var rightButton;
 var selectButton;
 
-// leftSprite.addEventListener("mousedown", function(e){
-//     leftSprite.gotoAndPlay("held");
-//     leftSprite.addEventListener('pressup', function(e){
-//         e.target.removeAllEventListeners();
-//         leftSprite.gotoAndPlay("normal");
-//         });
-//     });
-
-
-
-
-// rightSprite.addEventListener("mousedown", function(e){
-//     rightSprite.gotoAndPlay("held");
-//     rightSprite.addEventListener('pressup', function(e){
-//         e.target.removeAllEventListeners();
-//         rightSprite.gotoAndPlay("normal");
-//         });
-//     });
-
-
-
-// selectSprite.addEventListener("mousedown", function(e){
-// selectSprite.gotoAndPlay("held");
-// selectSprite.addEventListener('pressup', function(e){
-//     e.target.removeAllEventListeners();
-//     selectSprite.gotoAndPlay("normal");
-//     });
-// });
-
-
 //Menu container
 var menu;
-menu.x = 0;
-menu.y = 0;
 var test_g;
 var test_shape;
-
-//Menu boolean
-var inMenu = false;
 
 //Test stage
 var stage;
@@ -50,8 +15,8 @@ function load(){
 }
 function init(){
     stage = new createjs.Stage("canvas");
+    createjs.Ticker.addEventListener("tick",tick);
     createjs.Ticker.setFPS(60);
-    createjs.Ticker.addEventListener("tick", tick);
     startMenu();
 }
 
@@ -60,29 +25,33 @@ function tick(event){
 }
 
 function startMenu(){
-    leftButton = new createjs.Sprite(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal");
-    rightButton = new createjs.Sprite(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal");
-    selectButton = new createjs.Sprite(generateSpriteSheet("./Images/SelectButton.png",64,32,0,{normal:0, held:1}),"normal");
-    
-    test_g = new createjs.Graphic();
-    test_g.beginFill("rgba(255,20,20,0.8");
-    test_g.drawRect("100,100,100,100");
-    test_shape = new createjs.Shape(test_g);
-    
-    menu = new createjs.Container();
-    menu.addChild(test_shape);
-    stage.addChild(menu);
-}
+    leftButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+    rightButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));
+    selectButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png",128,64,0,{normal:0, held:1}),"normal"));
+    leftButton.addEventListener('mousedown', function(e){
+    leftButton.gotoAndPlay("normal");
+    leftButton.addEventListener('pressup', function(e){
+        e.target.removeAllEventListeners();
+        leftButton.gotoAndPlay("exist");
+        });
+    });
+    rightButton.addEventListener('mousedown', function(e){
+    rightButton.gotoAndPlay("normal");
+    rightButton.addEventListener('pressup', function(e){
+        e.target.removeAllEventListeners();
+        rightButton.gotoAndPlay("exist");
+        });
+    });
+        selectButton.addEventListener('mousedown', function(e){
+    selectButton.gotoAndPlay("normal");
+    selectButton.addEventListener('pressup', function(e){
+        e.target.removeAllEventListeners();
+        selectButton.gotoAndPlay("exist");
+        });
+    });
 
-function generateSpriteSheet(source, w, h, fps, anime){
-    var img = new Image();
-    img.crossOrigin="Anonymous";
-    img.src = source;
-    var data = {
-        images: [img],
-        frames: {width:w, height:h},
-        framerate: fps,
-        animations: anime
-    }
-    return data;
+    menu = new createjs.Container();
+    menu.x = 100; menu.y = -100;
+    menu.addChild(leftButton,rightButton,selectButton);
+    stage.addChild(test_shape, menu);
 }
