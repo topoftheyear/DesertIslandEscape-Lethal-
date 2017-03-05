@@ -1079,46 +1079,47 @@ function startMenu(){
     rightButton.y = selectButton.y;
 
     leftButton.addEventListener('mousedown', function(e){
-    leftButton.gotoAndPlay("normal");
-    leftButton.addEventListener('pressup', function(e){
-        if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
-            textChosenSize.text = "Large (21*21)";
-        } else if (textChosenSize.text.charAt(0).toLowerCase()==='l'){
-            textChosenSize.text = "Normal (17*17)";
-        } else if (textChosenSize.text.charAt(0).toLowerCase()==='n'){
-            textChosenSize.text = "Small (13*13)";
-        }
-        stage.update();
-        leftButton.gotoAndPlay("exist");
+        leftButton.gotoAndPlay("held");
+        leftButton.addEventListener('pressup', function(e){
+            if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
+                textChosenSize.text = "Large (21*21)";
+            } else if (textChosenSize.text.charAt(0).toLowerCase()==='l'){
+                textChosenSize.text = "Normal (17*17)";
+            } else if (textChosenSize.text.charAt(0).toLowerCase()==='n'){
+                textChosenSize.text = "Small (13*13)";
+            }
+            stage.update();
+            leftButton.gotoAndPlay("normal");
         });
     });
 
     rightButton.addEventListener('mousedown', function(e){
-    rightButton.gotoAndPlay("normal");
-    rightButton.addEventListener('pressup', function(e){
-        if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
-            textChosenSize.text = "Normal (17*17)";
-        } else if (textChosenSize.text.charAt(0).toLowerCase()==='n'){
-            textChosenSize.text = "Large (21*21)";
-        } else if (textChosenSize.text.charAt(0).toLowerCase()==='l'){
-            textChosenSize.text = "Small (13*13)";
-        }
-        
-        rightButton.gotoAndPlay("exist");
+        rightButton.gotoAndPlay("held");
+        rightButton.addEventListener('pressup', function(e){
+            if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
+                textChosenSize.text = "Normal (17*17)";
+            } else if (textChosenSize.text.charAt(0).toLowerCase()==='n'){
+                textChosenSize.text = "Large (21*21)";
+            } else if (textChosenSize.text.charAt(0).toLowerCase()==='l'){
+                textChosenSize.text = "Small (13*13)";
+            }
+            
+            rightButton.gotoAndPlay("normal");
         });
     });
 
     selectButton.addEventListener('mousedown', function(e){
-    selectButton.gotoAndPlay("normal");
-    selectButton.addEventListener('pressup', function(e){
-        mapSize = 13 + (sMenuShown * 4);
-        selectButton.gotoAndPlay("exist");
-        leftButton.removeAllEventListeners();
-        selectButton.removeAllEventListeners();
-        rightButton.removeAllEventListeners();
-        charMenu();
+        selectButton.gotoAndPlay("held");
+        selectButton.addEventListener('pressup', function(e){
+            mapSize = 13 + (sMenuShown * 4);
+            selectButton.gotoAndPlay("normal");
+            leftButton.removeAllEventListeners();
+            selectButton.removeAllEventListeners();
+            rightButton.removeAllEventListeners();
+            charMenu();
         });
     });
+    
     startMenu.addChild(leftButton,selectButton,rightButton);
     stage.addChild(startMenu);
 }
