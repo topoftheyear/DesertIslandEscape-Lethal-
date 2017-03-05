@@ -1074,7 +1074,7 @@ function startMenu(){
     leftButton.x = startMenu.x + 24;
     leftButton.y = textChosenSize.y + 32;
     selectButton.x = leftButton.x + 75;
-    selectButton.y = leftButton.y + 77;
+    selectButton.y = leftButton.y;
     rightButton.x = selectButton.x + 179;
     rightButton.y = selectButton.y;
 
