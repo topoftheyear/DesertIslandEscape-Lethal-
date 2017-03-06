@@ -1112,23 +1112,17 @@ function startMenu(){
 
     leftButton.addEventListener('mousedown', function(e){
         leftButton.gotoAndPlay("held");
-        leftButton.addEventListener('pressup', lButton());
-        leftButton.gotoAndPlay("normal");
-        leftButton.removeEventListener('pressup', lButton());
+        leftButton.addEventListener('pressup', lButton);  
     });
 
     rightButton.addEventListener('mousedown', function(e){
         rightButton.gotoAndPlay("held");
-        rightButton.addEventListener('pressup', rButton());
-        rightButton.gotoAndPlay("normal");
-        rightButton.removeEventListener('pressup', rButton());
+        rightButton.addEventListener('pressup', rButton);
     });
 
     selectButton.addEventListener('mousedown', function(e){
         selectButton.gotoAndPlay("held");
-        selectButton.addEventListener('pressup', sButton());
-        selectButton.gotoAndPlay("normal");
-        selectButton.removeEventListener('pressup', sButton());
+        selectButton.addEventListener('pressup', sButton);
     });
     
     startMenu.addChild(leftButton,selectButton,rightButton);
@@ -1143,6 +1137,9 @@ function lButton(){
         } else if (textChosenSize.text.charAt(0).toLowerCase()==='n'){
             textChosenSize.text = "Small (13*13)";
         }
+        
+    leftButton.gotoAndPlay("normal");
+    leftButton.removeEventListener('pressup', lButton);
 }
 function rButton(){
     if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
@@ -1152,6 +1149,9 @@ function rButton(){
     } else if (textChosenSize.text.charAt(0).toLowerCase()==='l'){
         textChosenSize.text = "Small (13*13)";
     }
+    
+    rightButton.gotoAndPlay("normal");
+    rightButton.removeEventListener('pressup', rButton);
 }
 function sButton(){
     if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
