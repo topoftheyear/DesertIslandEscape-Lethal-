@@ -52,6 +52,14 @@ var c1Type = "default";
 var c2Type = "default";
 var c3Type = "default";
 var c4Type = "default";
+// var brawlChar;
+// var defChar;
+// var breakChar;
+// var mobChar;
+// var farmChar;
+// var classText = new createjs.Text("Default", "32px VT323", "black");
+// var numText = new createjs.Text("Character 1:", "32px VT323", "black");
+//var currentClassNum = 1;
 function load(){
     init();
 }
@@ -1134,7 +1142,87 @@ function startMenu(){
     startMenu.addChild(leftButton,selectButton,rightButton);
     stage.addChild(startMenu);
 }
+/*function charMenu(){
 
+//     var charSub;
+//     var selectSub;
+//     currentClassNum = 1;
+//     //Create buttons and images
+//     leftButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+//     rightButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));    
+//     selectButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png",128,64,0,{normal:0, held:1}),"normal"));    
+
+//     brawlChar = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/BrawlerCharacter.png",32,32,0,{normal:0}),"normal"));
+//     defChar = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/DefaultCharacter.png",32,32,0,{normal:0}),"normal"));
+//     breakChar = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/BreakerCharacter.png",32,32,0,{normal:0}),"normal"));
+//     mobChar = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/MobsterCharacter.png",32,32,0,{normal:0}),"normal"));
+//     farmChar = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/FarmerCharacter.png",32,32,0,{normal:0}),"normal"));
+//     //Create character menu Container and background
+//     cMenu = new createjs.Container();
+//     cMenu.x = 100;
+//     cMenu.y = 100;
+//     var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(cMenu.x, cMenu.y, 640, 256, 10);
+//     var cMenuBackground = new createjs.Shape(g1);
+//     var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(cMenu.x + 5, cMenu.y + 5, 630, 246, 30);
+//     var cMenuBackground2 = new createjs.Shape(g2);
+//     cMenu.addChild(cMenuBackground, cMenuBackground2);
+
+//     charSub = new createjs.Container();
+//     charSub.x = cMenu.x + 65;
+//     charSub.y = cMenu.y + 32;
+
+//     numText.text = "Character 1:";
+//     classText.text = "Default";
+//     numText.x = charSub.x; numText.y = charSub.y-64;
+//     classText.x = charSub.x; classText.y = charSub.y-32;
+//     leftButton.x = charSub.x-55;
+//     leftButton.y = charSub.y + 35;
+//     rightButton.x = leftButton.x + 74;
+//     rightButton.y = leftButton.y;
+
+//     brawlChar.visible = false; breakChar.visible = false;
+//     mobChar.visible = false; farmChar.visible = false;
+
+//     brawlChar.x = charSub.x; brawlChar.y = charSub.y;
+//     defChar.x = charSub.x; defChar.y = charSub.y;
+//     breakChar.x = charSub.x; breakChar.y = charSub.y;
+//     mobChar.x = charSub.x; mobChar.y = charSub.y;
+//     farmChar.x = charSub.x; farmChar.y = charSub.y;
+
+//     leftButton.addEventListener("mousedown",function(e){
+//         leftButton.gotoAndPlay("held");
+//         leftButton.addEventListener('pressup', lClassButton());
+//         leftButton.removeEventListener('pressup',lClassButton());
+//         leftButton.gotoAndPlay("normal");
+//     });   
+//     //right Button
+//     rightButton.addEventListener("mousedown",function(e){
+//         rightButton.gotoAndPlay("held");
+//         rightButton.addEventListener('pressup', rClassButton());
+//         rightButton.removeEventListener('pressup',rClassButton());
+//         rightButton.gotoAndPlay("normal");
+//     });
+//     charSub.addChild(leftButton,rightButton,brawlChar,mobChar,breakChar,farmChar,defChar);
+//     stage.addChild(charSub);
+//     selectButton.addEventListener("mousedown",function(e){
+//         selectButton.gotoAndPlay("held");
+//         selectButton.addEventListener('pressup', sClassButton());
+//         selectButton.gotoAndPlay("normal");
+//         selectButton.removeEventListener('pressup', sClassButton());
+//         currentPhase="gameStart";
+//         inStart = false;
+//     });
+
+// selectSub = new createjs.Container();
+//     selectSub.x = charSub.x; selectSub.y = charSub.y+50;
+//     selectButton.x = selectSub.x -54; selectButton.y = selectSub.y;
+//     selectSub.addChild(selectButton);
+//     stage.addChild(selectSub);
+
+ //       currentPhase="gameStart";
+  //      inStart = false;
+
+//}
 function lButton(){
     if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
             textChosenSize.text = "Large (21*21)";
@@ -1162,11 +1250,134 @@ function sButton(){
         mapSize = 21;
     }
     stage.removeChild(startMenu);
-    inStart = false;
     currentPhase="gameStart";
+    inStart = false;
+    //charMenu();
+}*/
+/*
+function lClassButton(){        
+    if(brawlChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = false;
+        breakChar.visible = false;
+        mobChar.visible = false;
+        farmChar.visible = true;
+        classText.text = "Farmer";
+    }
+    else if(defChar.isVisible()){
+        brawlChar.visible = true;
+        defChar.visible = false;
+        breakChar.visible = false;
+        mobChar.visible = false;
+        farmChar.visible = false;
+        classText.text = "Brawler";
+    }
+    else if(breakChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = true;
+        breakChar.visible = false;
+        mobChar.visible = false;
+        farmChar.visible = false;
+        classText.text = "Default";
+    }
+    else if(mobChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = false;
+        breakChar.visible = true;
+        mobChar.visible = false;
+        farmChar.visible = true;
+        classText.text = "Breaker";
+    }
+    else if(farmChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = false;
+        breakChar.visible = false;
+        mobChar.visible = true;
+        farmChar.visible = false;
+        classText.text = "Mobster";
+    }
 }
-
-
+function rClassButton(){        
+    if(brawlChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = true;
+        breakChar.visible = false;
+        mobChar.visible = false;
+        farmChar.visible = false;
+        classText.text = "Default";
+    }
+    else if(defChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = false;
+        breakChar.visible = true;
+        mobChar.visible = false;
+        farmChar.visible = false;
+        classText.text = "Breaker";
+    }
+    else if(breakChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = false;
+        breakChar.visible = false;
+        mobChar.visible = true;
+        farmChar.visible = false;
+        classText.text = "Mobster";
+    }
+    else if(mobChar.isVisible()){
+        brawlChar.visible = false;
+        defChar.visible = false;
+        breakChar.visible = false;
+        mobChar.visible = false;
+        farmChar.visible = true;
+        classText.text = "Farmer";
+    }
+    else if(farmChar.isVisible()){
+        brawlChar.visible = true;
+        defChar.visible = false;
+        breakChar.visible = false;
+        mobChar.visible = false;
+        farmChar.visible = false;
+        classText.text = "Brawler";
+    }
+}
+function sClassButton(){
+    var tempString;
+    if(brawlChar.isVisible()){
+        tempString = "brawler";
+    }
+    else if(defChar.isVisible()){
+        tempString = "default";
+    }
+    else if(breakChar.isVisible()){
+        tempString = "breaker";
+    }
+    else if(mobChar.isVisible()){
+        tempString = "mobster";
+    }
+    else if(farmChar.isVisible()){
+        tempString = "farmer";
+    }
+    switch(currentTypeNum){
+        case 1:
+            c1Type = tempString;
+            numText.text="Character 2:"
+            currentTypeNum++;
+            break;
+        case 2:
+            c2Type = tempString;
+            numText.text="Character 3:"
+            currentTypeNum++;
+            break;
+        case 3:
+            c3Type = tempString;
+            numText.text="Character 4:"
+            currentTypeNum++;
+            break;
+        case 4:
+            c4Type = tempString;
+            generateCharacters(c1Type,c2Type,c3Type,c4Type);
+            break;
+    }
+}*/
 // Lets the next character take their turn
 function nextCharacter(){
     if (currentCharacter === character1){
