@@ -46,12 +46,10 @@ var selectButton;
 //Menus
 var startMenu;
 var inStart = false;
-//var cMenu;
+var charMenu;
 var textChosenSize;
-var c1Type = "default";
-var c2Type = "default";
-var c3Type = "default";
-var c4Type = "default";
+var tracker = 0;
+
 function load(){
     init();
 }
@@ -175,6 +173,11 @@ function tick(event){
             inStart=true;
             startMenu();
         }
+    } else if (currentPhase === "characterSelect"){
+        if (!inStart){
+            inStart = true;
+            charSelect();
+        }
     }
     
     if (currentPhase === "gameOver"){
@@ -245,9 +248,8 @@ function tick(event){
     
     if (!actionOccuring){
         if (currentPhase === "gameStart"){
-            generateMap();
-            generateCharacters(c1Type, c2Type, c3Type, c4Type);
             generateSideMenu();
+            drawCharacters();
     
             // Map movement by mouse added
             gameWorld.addEventListener('mousedown', mouseDnD);
@@ -324,7 +326,7 @@ function tick(event){
         }
     
         // Game loss check
-        if (currentPhase !== "menu" && currentPhase !== "gameStart" && currentPhase !== "dead" && (daysRemaining === 0 || foodPile < 0)){
+        if (currentPhase !== "menu" && currentPhase !== "gameStart" && currentPhase !== "dead" && currentPhase !== "characterSelect" && (daysRemaining === 0 || foodPile < 0)){
             currentPhase = "gameOver";
         }
         
@@ -543,7 +545,7 @@ function tick(event){
     }
     
     // Game stuff update
-    if (currentPhase !== "menu" && currentPhase !== "gameStart"){
+    if (currentPhase !== "menu" && currentPhase !== "gameStart" && currentPhase !== "characterSelect" && currentPhase !== "dead"){
         sideMenu.getChildAt(2).text = (":" + foodPile);
         sideMenu.getChildAt(4).text = (":" + woodPile);
         sideMenu.getChildAt(6).text = (":" + daysRemaining);
@@ -909,6 +911,37 @@ function drawMap(){
     }
 }
 
+function charSelect(){
+    var charType1 = "default";
+    var charType2 = "default";
+    var charType3 = "default";
+    var charType4 = "default";
+    
+    classes = ["Default", "Brawler", "Breaker", "Farmer", "Mobster"];
+    
+    var charMenu = new createjs.Container();
+    
+    var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(0, 0, 1216, 960, 10);
+    var popupBackground = new createjs.Shape(g1);
+    var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(5, 5, 1206, 950, 30);
+    var popupBackground2 = new createjs.Shape(g2);
+    charMenu.addChild(popupBackground, popupBackground2);
+    var leftButton1 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+    
+    var rightButton1 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal")); 
+    var leftButton2 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+    var rightButton2 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));
+    var leftButton3 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+    var rightButton3 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));
+    var leftButton4 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+    var rightButton4 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));    
+    var selectButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png",128,64,0,{normal:0, held:1}),"normal"));    
+    
+    stage.addChild(charMenu);
+    //generateCharacters(charType1, charType2, charType3, charType4);
+    //currentPhase = "gameStart";
+}
+
 // Character generation based on classes given
 function generateCharacters(type1, type2, type3, type4){
     // Give the character the stats based on the respective type given
@@ -947,33 +980,33 @@ function generateCharacters(type1, type2, type3, type4){
             currentCharacter.sight = 1;
         }
         else if (type === "farmer"){
-        currentCharacter.class = "farmer";
-        currentCharacter.sprite = new createjs.Sprite(farmerCharacterSheet, "exist");
-        currentCharacter.food = 3;
-        currentCharacter.movement = 4;
-        currentCharacter.sight = 1;
-    }
+            currentCharacter.class = "farmer";
+            currentCharacter.sprite = new createjs.Sprite(farmerCharacterSheet, "exist");
+            currentCharacter.food = 3;
+            currentCharacter.movement = 4;
+            currentCharacter.sight = 1;
+        }
         else if (type === "mobster"){
-        currentCharacter.class = "mobster";
-        currentCharacter.sprite = new createjs.Sprite(mobsterCharacterSheet, "exist");
-        currentCharacter.food = 3;
-        currentCharacter.movement = 6;
-        currentCharacter.sight = 1;
-    }
+            currentCharacter.class = "mobster";
+            currentCharacter.sprite = new createjs.Sprite(mobsterCharacterSheet, "exist");
+            currentCharacter.food = 3;
+            currentCharacter.movement = 6;
+            currentCharacter.sight = 1;
+        }
         else if (type === "brawler"){
-        currentCharacter.class = "brawler";
-        currentCharacter.sprite = new createjs.Sprite(brawlerCharacterSheet, "exist");
-        currentCharacter.food = 3;
-        currentCharacter.movement = 4;
-        currentCharacter.sight = 1;
-    }
+            currentCharacter.class = "brawler";
+            currentCharacter.sprite = new createjs.Sprite(brawlerCharacterSheet, "exist");
+            currentCharacter.food = 3;
+            currentCharacter.movement = 4;
+            currentCharacter.sight = 1;
+        }
         else if (type === "breaker"){
-        currentCharacter.class = "breaker";
-        currentCharacter.sprite = new createjs.Sprite(beakerCharacterSheet, "exist");
-        currentCharacter.food = 2;
-        currentCharacter.movement = 3;
-        currentCharacter.sight = 1;
-    }
+            currentCharacter.class = "breaker";
+            currentCharacter.sprite = new createjs.Sprite(beakerCharacterSheet, "exist");
+            currentCharacter.food = 2;
+            currentCharacter.movement = 3;
+            currentCharacter.sight = 1;
+        }
     }
 
     // Put them in the map[][] at spawn, and draw them in staggered per corner
@@ -996,8 +1029,6 @@ function generateCharacters(type1, type2, type3, type4){
     character4.j = spawn.y;
     character4.sprite.x = spawn.x * 64 + 32;
     character4.sprite.y = spawn.y * 64 + 32;
-    
-    drawCharacters();
 }
 
 // Draws the characters
@@ -1084,31 +1115,31 @@ function startMenu(){
     
     //Create start menu Container and background
     startMenu = new createjs.Container();
-    startMenu.x = 256;
-    startMenu.y = 156;
-    var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(startMenu.x, startMenu.y, 384, 256, 10);
+    startMenu.x = 0;
+    startMenu.y = 0;
+    var g1 = new createjs.Graphics().beginFill("black").drawRoundRect(startMenu.x, startMenu.y, 1216, 960, 10);
     var startMenuBackground = new createjs.Shape(g1);
-    var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(startMenu.x + 5, startMenu.y + 5, 374, 246, 30);
+    var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(startMenu.x + 5, startMenu.y + 5, 1206, 950, 30);
     var startMenuBackground2 = new createjs.Shape(g2);
     startMenu.addChild(startMenuBackground, startMenuBackground2);
 
     //Text for map size added to Menu
-    var textMapSize = new createjs.Text("Map Size:", "32px VT323", "black");
-    textMapSize.x = startMenu.x + 124;
-    textMapSize.y = startMenu.y + 25;
+    var textMapSize = new createjs.Text("Map Size:", "64px VT323", "black");
+    textMapSize.x = startMenu.x + 500;
+    textMapSize.y = startMenu.y + 64;
     startMenu.addChild(textMapSize);
     //Varying size text and array of the sizes
-    textChosenSize = new createjs.Text("Normal (17*17)", "32px VT323", "black");
-    textChosenSize.x = textMapSize.x - 40;
-    textChosenSize.y = textMapSize.y + 42;
+    textChosenSize = new createjs.Text("Normal (17*17)", "64px VT323", "black");
+    textChosenSize.x = startMenu.x + 436;
+    textChosenSize.y = startMenu.y + 128;
     startMenu.addChild(textChosenSize);
 
-    leftButton.x = startMenu.x + 44;
-    leftButton.y = textChosenSize.y + 52;
-    selectButton.x = leftButton.x + 75;
-    selectButton.y = leftButton.y;
-    rightButton.x = selectButton.x + 135;
-    rightButton.y = selectButton.y;
+    leftButton.x = startMenu.x + 480;
+    leftButton.y = startMenu.y + 196;
+    selectButton.x = startMenu.x + 540;
+    selectButton.y = startMenu.y + 196;
+    rightButton.x = startMenu.x + 666;
+    rightButton.y = startMenu.y + 196;
 
     leftButton.addEventListener('mousedown', function(e){
         leftButton.gotoAndPlay("held");
@@ -1141,6 +1172,7 @@ function lButton(){
     leftButton.gotoAndPlay("normal");
     leftButton.removeEventListener('pressup', lButton);
 }
+
 function rButton(){
     if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
         textChosenSize.text = "Normal (17*17)";
@@ -1153,6 +1185,7 @@ function rButton(){
     rightButton.gotoAndPlay("normal");
     rightButton.removeEventListener('pressup', rButton);
 }
+
 function sButton(){
     if(textChosenSize.text.charAt(0).toLowerCase()==='s'){
         mapSize = 13;
@@ -1163,7 +1196,11 @@ function sButton(){
     }
     stage.removeChild(startMenu);
     inStart = false;
-    currentPhase="gameStart";
+    generateMap();
+    leftButton.removeAllEventListeners();
+    rightButton.removeAllEventListeners();
+    selectButton.removeAllEventListeners();
+    currentPhase = "characterSelect";
 }
 
 
