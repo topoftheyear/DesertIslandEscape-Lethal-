@@ -52,18 +52,10 @@ var tracker = 1;
 var choice = 1;
 var charTracker = 1;
 
-// Music
-var menuMusic;
-var mainMusic;
-
 function load(){
-    preload = new createjs.LoadQueue(true);
-    preload.installPlugin(createjs.Sound);
-    createjs.Sound.initializeDefaultPlugins();
-    createjs.Sound.alternateExtensions = ["flac"]
-    preload.loadManifest([{src: "./Audio/Menu.flac", id: "menu"}]);
-    
-    createjs.Sound.addEventListener("fileload", init());
+    document.getElementById("Menu").load();
+    document.getElementById("Theme").load();
+    init();
 }
 
 function init(){
@@ -73,8 +65,9 @@ function init(){
     gameWorld.x = 256;
     gameWorld.y = 0;
     
-    menuMusic = createjs.Sound.play("./Audio/Menu.flac");
-    mainMusic = createjs.Sound.play("./Audio/Theme.flac");
+    tracker = 1;
+    choice = 1;
+    charTracker = 1;
     
     currentPhase = "menu";
     
@@ -127,9 +120,6 @@ function keyDown(event){
                 createjs.Tween.get(currentCharacter.sprite, {override:false}).to({y:currentCharacter.sprite.y + 64}, 1000).call(handleComplete);
                 currentCharacter.j = currentCharacter.j + 1;
             }
-        } else if (key === 13 && currentPhase === "menu"){
-            // Enter key for temporary menu bypass
-            currentPhase = "gameStart";
         }
     }
 }
@@ -184,12 +174,14 @@ function tick(event){
     }
     
     if (currentPhase === "menu"){
+        document.getElementById("Theme").pause();
+        document.getElementById("Menu").play();
         if(!inStart){
             inStart=true;
-            menuMusic.play(-1);
-            startMenu();
+            startMenuf();
         }
     } else if (currentPhase === "characterSelect"){
+        document.getElementById("Menu").play();
         if (!inStart){
             inStart = true;
             charSelect();
@@ -197,6 +189,7 @@ function tick(event){
     }
     
     if (currentPhase === "gameOver"){
+        document.getElementById("Theme").play();
         popup = new createjs.Container();
         popup.x = 256;
         popup.y = -256;
@@ -230,6 +223,7 @@ function tick(event){
     }
     
     if (currentPhase === "win"){
+        document.getElementById("Theme").play();
         popup = new createjs.Container();
         popup.x = 256;
         popup.y = -256;
@@ -264,6 +258,8 @@ function tick(event){
     
     if (!actionOccuring){
         if (currentPhase === "gameStart"){
+            document.getElementById("Menu").pause();
+            document.getElementById("Theme").play();
             stage.removeAllChildren();
             generateSideMenu();
             drawCharacters();
@@ -291,6 +287,7 @@ function tick(event){
     
         // Fog of War
         if (currentPhase === "turn"){
+            document.getElementById("Theme").play();
             i = currentCharacter.i;
             j = currentCharacter.j;
             
@@ -641,7 +638,7 @@ function deleteStuff(){
     popup.removeAllChildren();
     stage.removeAllChildren();
     sideMenu.removeAllChildren();
-    currentPhase = "menu";
+    init();
 }
 
 // Whaow
@@ -979,7 +976,7 @@ function charSelect(){
     foodCharSprite.x = 540; foodCharSprite.y = 410;
     var mCharText = new createjs.Text("Moves", "64px VT323", "black");
     mCharText.x = 478; mCharText.y = 474;
-    var movesCharText = new createjs.Text(": 3", "64px VT323", "black");
+    var movesCharText = new createjs.Text(": 4", "64px VT323", "black");
     movesCharText.x = 600; movesCharText.y = 474;
     var sCharText = new createjs.Text("Sight", "64px VT323", "black");
     sCharText.x = 478; sCharText.y = 538;
@@ -1079,6 +1076,7 @@ function charSelect(){
             }
             generateCharacters(charType1, charType2, charType3, charType4);
             currentPhase = "gameStart";
+            inStart = false;
         }
         charTracker++;
         updateText();
@@ -1088,7 +1086,7 @@ function charSelect(){
         if (tracker === 1){
             classCharText.text = "Default";
             foodCharText.text = ": 2";
-            movesCharText.text = ": 3";
+            movesCharText.text = ": 4";
             sightCharText.text = ": 2";
             charMenu.getChildAt(2).gotoAndPlay("reg");
         } else if (tracker === 2){
@@ -1163,7 +1161,7 @@ function generateCharacters(type1, type2, type3, type4){
             currentCharacter.class = "default";
             currentCharacter.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
             currentCharacter.food = 2;
-            currentCharacter.movement = 3;
+            currentCharacter.movement = 4;
             currentCharacter.sight = 2;
         }
         else if (type === "farmer"){
@@ -1294,7 +1292,7 @@ function generateSideMenu(){
 }
 
 //Start Menu creation, interaction, and deletion
-function startMenu(){
+function startMenuf(){
     //Create buttons
     leftButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
     rightButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));    
