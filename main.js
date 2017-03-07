@@ -48,10 +48,22 @@ var startMenu;
 var inStart = false;
 var charMenu;
 var textChosenSize;
-var tracker = 0;
+var tracker = 1;
+var choice = 1;
+var charTracker = 1;
+
+// Music
+var menuMusic;
+var mainMusic;
 
 function load(){
-    init();
+    preload = new createjs.LoadQueue(true);
+    preload.installPlugin(createjs.Sound);
+    createjs.Sound.initializeDefaultPlugins();
+    createjs.Sound.alternateExtensions = ["flac"]
+    preload.loadManifest([{src: "./Audio/Menu.flac", id: "menu"}]);
+    
+    createjs.Sound.addEventListener("fileload", init());
 }
 
 function init(){
@@ -60,6 +72,9 @@ function init(){
     stage = new createjs.Stage("canvas");
     gameWorld.x = 256;
     gameWorld.y = 0;
+    
+    menuMusic = createjs.Sound.play("./Audio/Menu.flac");
+    mainMusic = createjs.Sound.play("./Audio/Theme.flac");
     
     currentPhase = "menu";
     
@@ -171,6 +186,7 @@ function tick(event){
     if (currentPhase === "menu"){
         if(!inStart){
             inStart=true;
+            menuMusic.play(-1);
             startMenu();
         }
     } else if (currentPhase === "characterSelect"){
@@ -248,6 +264,7 @@ function tick(event){
     
     if (!actionOccuring){
         if (currentPhase === "gameStart"){
+            stage.removeAllChildren();
             generateSideMenu();
             drawCharacters();
     
@@ -283,11 +300,19 @@ function tick(event){
             map[i][j+1].fogSprite.visible = false;
             map[i][j-1].fogSprite.visible = false;
             
-            if (currentCharacter.visibility === 2){
-                map[i+2][j].fogSprite.visible = false;
-                map[i-2][j].fogSprite.visible = false;
-                map[i][j+2].fogSprite.visible = false;
-                map[i][j+2].fogSprite.visible = false;
+            if (currentCharacter.sight === 2){
+                if (!(i + 2 > mapSize)){
+                    map[i+2][j].fogSprite.visible = false;
+                }
+                if (!(i - 2 < 0)){
+                    map[i-2][j].fogSprite.visible = false;
+                }
+                if (!(j + 2 > mapSize)){
+                    map[i][j+2].fogSprite.visible = false;
+                }
+                if (!(j - 2 < 0)){
+                    map[i][j-2].fogSprite.visible = false;
+                }
                 
                 map[i+1][j+1].fogSprite.visible = false;
                 map[i+1][j-1].fogSprite.visible = false;
@@ -406,6 +431,9 @@ function tick(event){
                 popup.addChild(text2);
                 
                 amount = randomNumber(1,4);
+                if (currentCharacter.class === "farmer"){
+                    amount += 2;
+                }
                 var text3 = new createjs.Text("You got " + amount + " " + fruit + "!", "32px VT323", "black");
                 text3.x = popup.x + 24;
                 text3.y = popup.y + 116;
@@ -477,6 +505,9 @@ function tick(event){
                         enemy = "scorpion";
                         difficulty = 3;
                         break;
+                }
+                if (currentCharacter.class === "brawler"){
+                    difficulty -= 2;
                 }
                 
                 yesSprite.x = popup.x + 123;
@@ -911,13 +942,14 @@ function drawMap(){
     }
 }
 
+// Character select menu
 function charSelect(){
     var charType1 = "default";
     var charType2 = "default";
     var charType3 = "default";
     var charType4 = "default";
     
-    classes = ["Default", "Brawler", "Breaker", "Farmer", "Mobster"];
+    var classes = ["Default", "Brawler", "Breaker", "Farmer", "Mobster"];
     
     var charMenu = new createjs.Container();
     
@@ -926,20 +958,175 @@ function charSelect(){
     var g2 = new createjs.Graphics().beginFill("#d3d3d3").drawRoundRect(5, 5, 1206, 950, 30);
     var popupBackground2 = new createjs.Shape(g2);
     charMenu.addChild(popupBackground, popupBackground2);
-    var leftButton1 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
     
-    var rightButton1 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal")); 
-    var leftButton2 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
-    var rightButton2 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));
-    var leftButton3 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
-    var rightButton3 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));
-    var leftButton4 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
-    var rightButton4 = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));    
-    var selectButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png",128,64,0,{normal:0, held:1}),"normal"));    
+    tracker = 1;
+    
+    var creationSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/CreationSprites.png", 32, 32, 5, {reg:{frames:[0,1,0,2]}, breaker:{frames:[3,4,3,5]}, brawler:{frames:[6,7,6,8]}, farmer:{frames:[9,10,9,11]}, mobster:{frames:[12,13,12,14]}})), "reg");
+    
+    var dude = creationSprite;
+    dude.x = 480; dude.y = 64; dude.scaleX = 8; dude.scaleY = 8;
+    var currentDudeText = new createjs.Text("Party Member: 1", "64px VT323", "black");
+    currentDudeText.x = 64; currentDudeText.y = 900;
+    var leftCharButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/LeftButton.png",64,64,0,{normal:0, held:1}), "normal"));
+    leftCharButton.x = 485; leftCharButton.y = 602;
+    var rightCharButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/RightButton.png",64,64,0,{normal:0, held:1}),"normal"));
+    rightCharButton.x = 680; rightCharButton.y = 602;
+    var classCharText = new createjs.Text("Default", "64px VT323", "black");
+    classCharText.x = 530; classCharText.y = 344;
+    var foodCharText = new createjs.Text(": 2", "64px VT323", "black");
+    foodCharText.x = 600; foodCharText.y = 410;
+    var foodCharSprite = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/Apple.png", 64, 64, 0, {exist:[0]})), "exist");
+    foodCharSprite.x = 540; foodCharSprite.y = 410;
+    var mCharText = new createjs.Text("Moves", "64px VT323", "black");
+    mCharText.x = 478; mCharText.y = 474;
+    var movesCharText = new createjs.Text(": 3", "64px VT323", "black");
+    movesCharText.x = 600; movesCharText.y = 474;
+    var sCharText = new createjs.Text("Sight", "64px VT323", "black");
+    sCharText.x = 478; sCharText.y = 538;
+    var sightCharText = new createjs.Text(": 2", "64px VT323", "black");
+    sightCharText.x = 600; sightCharText.y = 538;
+    var selectCharButton = new createjs.Sprite(new createjs.SpriteSheet(generateSpriteSheet("./Images/SelectButton.png",128,64,0,{normal:0, held:1}),"normal"));
+    selectCharButton.x = 550; selectCharButton.y = 602;
+    
+    leftCharButton.addEventListener('mousedown', function(e){
+        leftCharButton.gotoAndPlay("held");
+        leftCharButton.addEventListener('pressup', left1);
+    });
+    
+    rightCharButton.addEventListener('mousedown', function(e){
+        rightCharButton.gotoAndPlay("held");
+        rightCharButton.addEventListener('pressup', right1);
+    });
+    
+    selectCharButton.addEventListener('mousedown', function(e){
+        selectCharButton.gotoAndPlay("held");
+        selectCharButton.addEventListener('pressup', select1);
+    });
+    
+    charMenu.addChild(dude, currentDudeText, leftCharButton, rightCharButton, classCharText, foodCharText, foodCharSprite, mCharText, movesCharText, sCharText, sightCharText, selectCharButton);
     
     stage.addChild(charMenu);
-    //generateCharacters(charType1, charType2, charType3, charType4);
-    //currentPhase = "gameStart";
+    
+    function left1(){
+        leftCharButton.gotoAndPlay("normal");
+        tracker--;
+        if (tracker < 1){
+            tracker = 5;
+        }
+        updateText();
+        leftCharButton.removeEventListener('pressup', left1);
+    }
+    
+    function right1(){
+        rightCharButton.gotoAndPlay("normal");
+        tracker++;
+        if (tracker > 5){
+            tracker = 1;
+        }
+        updateText();
+        rightCharButton.removeEventListener('pressup', right1);
+    }
+    
+    function select1(){
+        selectCharButton.gotoAndPlay("normal");
+        if (charTracker === 1){
+            if (tracker === 1){
+                charType1 = "default";
+            } else if (tracker === 2){
+                charType1 = "brawler";
+            } else if (tracker === 3){
+                charType1 = "breaker";
+            } else if (tracker === 4){
+                charType1 = "farmer";
+            } else if (tracker === 5){
+                charType1 = "mobster";
+            }
+        } else if (charTracker === 2){
+            if (tracker === 1){
+                charType2 = "default";
+            } else if (tracker === 2){
+                charType2 = "brawler";
+            } else if (tracker === 3){
+                charType2 = "breaker";
+            } else if (tracker === 4){
+                charType2 = "farmer";
+            } else if (tracker === 5){
+                charType2 = "mobster";
+            }
+        } else if (charTracker === 3){
+            if (tracker === 1){
+                charType3 = "default";
+            } else if (tracker === 2){
+                charType3 = "brawler";
+            } else if (tracker === 3){
+                charType3 = "breaker";
+            } else if (tracker === 4){
+                charType3 = "farmer";
+            } else if (tracker === 5){
+                charType3 = "mobster";
+            }
+        } else if (charTracker === 4){
+            if (tracker === 1){
+                charType4 = "default";
+            } else if (tracker === 2){
+                charType4 = "brawler";
+            } else if (tracker === 3){
+                charType4 = "breaker";
+            } else if (tracker === 4){
+                charType4 = "farmer";
+            } else if (tracker === 5){
+                charType4 = "mobster";
+            }
+            generateCharacters(charType1, charType2, charType3, charType4);
+            currentPhase = "gameStart";
+        }
+        charTracker++;
+        updateText();
+    }
+            
+    function updateText(){
+        if (tracker === 1){
+            classCharText.text = "Default";
+            foodCharText.text = ": 2";
+            movesCharText.text = ": 3";
+            sightCharText.text = ": 2";
+            charMenu.getChildAt(2).gotoAndPlay("reg");
+        } else if (tracker === 2){
+            classCharText.text = "Brawler";
+            foodCharText.text = ": 3";
+            movesCharText.text = ": 4";
+            sightCharText.text = ": 1";
+            charMenu.getChildAt(2).gotoAndPlay("breaker");
+        } else if (tracker === 3){
+            classCharText.text = "Breaker";
+            foodCharText.text = ": 2";
+            movesCharText.text = ": 3";
+            sightCharText.text = ": 1";
+            charMenu.getChildAt(2).gotoAndPlay("brawler");
+        } else if (tracker === 4){
+            classCharText.text = "Farmer";
+            foodCharText.text = ": 3";
+            movesCharText.text = ": 4";
+            sightCharText.text = ": 1";
+            charMenu.getChildAt(2).gotoAndPlay("farmer");
+        } else if (tracker === 5){
+            classCharText.text = "Mobster";
+            foodCharText.text = ": 2";
+            movesCharText.text = ": 6";
+            sightCharText.text = ": 1";
+            charMenu.getChildAt(2).gotoAndPlay("mobster");
+        }
+        
+        if (charTracker === 1){
+            currentDudeText.text = "Party Member: 1";
+        } else if (charTracker === 2){
+            currentDudeText.text = "Party Member: 2";
+        } else if (charTracker === 3){
+            currentDudeText.text = "Party Member: 3";
+        } else if (charTracker === 4){
+            currentDudeText.text = "Party Member: 4";
+        }
+    }
 }
 
 // Character generation based on classes given
@@ -976,8 +1163,8 @@ function generateCharacters(type1, type2, type3, type4){
             currentCharacter.class = "default";
             currentCharacter.sprite = new createjs.Sprite(defaultCharacterSheet, "exist");
             currentCharacter.food = 2;
-            currentCharacter.movement = 4;
-            currentCharacter.sight = 1;
+            currentCharacter.movement = 3;
+            currentCharacter.sight = 2;
         }
         else if (type === "farmer"){
             currentCharacter.class = "farmer";
@@ -1002,7 +1189,7 @@ function generateCharacters(type1, type2, type3, type4){
         }
         else if (type === "breaker"){
             currentCharacter.class = "breaker";
-            currentCharacter.sprite = new createjs.Sprite(beakerCharacterSheet, "exist");
+            currentCharacter.sprite = new createjs.Sprite(breakerCharacterSheet, "exist");
             currentCharacter.food = 2;
             currentCharacter.movement = 3;
             currentCharacter.sight = 1;
@@ -1202,7 +1389,6 @@ function sButton(){
     selectButton.removeAllEventListeners();
     currentPhase = "characterSelect";
 }
-
 
 // Lets the next character take their turn
 function nextCharacter(){
